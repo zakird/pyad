@@ -13,19 +13,19 @@ A copy of the GNU General Public License is available at <http://www.gnu.org/lic
 Basics
 ------
 
-Active Directory objects are represented by standard python objects. There are classes for all major types of Active Directory objects: ADComputer, ADContainer, ADDomain, ADGroup, ADUser, all of which inherit from ADObject. It is possible to connect to objects via CN, DN, and GUID. Example:
+Active Directory objects are represented by standard python objects. There are classes for all major types of Active Directory objects: ADComputer, ADContainer, ADDomain, ADGroup, ADUser, all of which inherit from ADObject. It is possible to connect to objects via CN, DN, and GUID. Example::
 
     import pyad
     u = pyad.aduser.ADUser.from_cn("user1")
     c = pyad.adcomputer.ADComputer.from_dn("cn=WS1,ou=Workstations,dc=domain,dc=com")
     g = pyad.adgroup.ADGroup.from_cn("group1")
     
-It is possible to read attribute values in two ways.
+It is possible to read attribute values in two ways.::
 
     print u.displayName
     print u.get_attribute("displayName")
     
-Attributes can be set by calling clear_attribute, update_attribute, update_attributes, append_to_attribute, and remove_from_attribute. Example:
+Attributes can be set by calling clear_attribute, update_attribute, update_attributes, append_to_attribute, and remove_from_attribute. Example::
 
     u.update_attribute("displayName", "new value")
 
@@ -34,42 +34,42 @@ There are other helper methods available for managing attributes. We provide fur
 Group Examples
 --------------
 
-1. Finding group members:
+1. Finding group members::
 
 	for object in g.get_members(recursive=False):
 		print object
 
-2. Adding an object to a group:
+2. Adding an object to a group::
 
 	g.add_members(u)
-or
+or::
 	u.add_to_group(g)
 
-3. Set group scope:
+3. Set group scope::
 
 	g.set_group_scope("UNIVERSAL")
 
 User Examples
 -------------
 
-1. Set password:
+1. Set password::
 
 	u.set_password("new_plaintext_password")
 
-2. Force password change on login:
+2. Force password change on login::
 
 	u.force_pwd_change_on_login()
 
 Container Examples
 ------------------
 
-1. Find all objects in an OU:
+1. Find all objects in an OU::
 
 	ou = pyad.adcontainer.ADContainer.from_dn("OU=Workstations,DC=company,DC=com")
 	for obj in ou.get_children():
 		print obj
 		
-2. Recursively find all computers below a certain OU:
+2. Recursively find all computers below a certain OU::
 
 	for c in ou.get_children(recursive=True, filter=[pyad.adcomputer.ADComputer]):
 		print c
@@ -77,7 +77,7 @@ Container Examples
 Creating Objects
 ----------------
 
-It is possible to create objects through pyad. Example:
+It is possible to create objects through pyad. Example::
 
 	ou = pyad.adcontainer.ADContainer.from_dn("OU=Workstations,DC=company,DC=com")
 	c = pyad.adcomputer.ADComputer.create(
@@ -92,7 +92,7 @@ It is possible to create objects through pyad. Example:
 Querying
 --------
 
-It is also possible to make queries to find objects. Example:
+It is also possible to make queries to find objects. Example::
 
 	q = pyad.adquery.ADQuery()
 	q.execute_query(
