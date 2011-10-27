@@ -13,7 +13,7 @@ setup(
     maintainer = "Zakir Durumeric",
     maintainer_email = "zakird@gmail.com",
     url = "https://github.com/zakird/pyad",
-    description = "A pure Python Object-Oriented Active Directory management framework built on ADSI through pywin32.",
+    description = "An Object-Oriented Active Directory management framework built on ADSI",
     license = "GNUv3",
     keywords = "python microsoft windows active directory AD adsi",
     packages=[
