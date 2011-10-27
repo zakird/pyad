@@ -42,7 +42,9 @@ Group Examples
 2. Adding an object to a group::
 
 	g.add_members(u)
+
 or::
+
 	u.add_to_group(g)
 
 3. Set group scope::
