@@ -394,3 +394,10 @@ class ADObject(ADBase):
         q.adjust_pyad_type()
         return q
     parent_container = property(__get_parent_container)
+    
+    def delete(self):
+        parent = self.parent_container
+        if not parent:
+            raise Exception("Object does not have a parent container. Cannot be deleted")
+        else:
+            parent.remove_child(self)
