@@ -262,8 +262,8 @@ class ADObject(ADBase):
             if newValue:
                 nv = nv | ADS_USER_FLAG[userFlag]
             self.update_attribute('userAccountControl',nv)
-            
-    def _disable(self): 
+    
+    def disable(self): 
         try:
             if self._ldap_adsi_obj.AccountDisabled == False:
                 self._ldap_adsi_obj.AccountDisabled = True
@@ -271,7 +271,7 @@ class ADObject(ADBase):
         except pywintypes.com_error, excpt: 
             pyadutils.pass_up_com_exception(excpt)
 
-    def _enable(self): 
+    def enable(self): 
         try:
             if self._ldap_adsi_obj.AccountDisabled == True:
                 self._ldap_adsi_obj.AccountDisabled = False
