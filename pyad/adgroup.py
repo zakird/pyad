@@ -1,4 +1,5 @@
 from adobject import *
+import pyadconstants
 
 class ADGroup(ADObject):
 
@@ -66,9 +67,9 @@ class ADGroup(ADObject):
     def get_group_scope(self): 
         """Returns the group scope GLOBAL, UNIVERSAL, or LOCAL."""
         group_type = self.get_attribute('groupType', False)
-        if group_type & pyADConstants.ADS_GROUP_TYPE['GLOBAL'] == pyADConstants.ADS_GROUP_TYPE['GLOBAL']:
+        if group_type & pyadconstants.ADS_GROUP_TYPE['GLOBAL'] == pyadconstants.ADS_GROUP_TYPE['GLOBAL']:
             return 'GLOBAL'
-        elif group_type & pyADConstants.ADS_GROUP_TYPE['UNIVERSAL'] == pyADConstants.ADS_GROUP_TYPE['UNIVERSAL']:
+        elif group_type & pyadconstants.ADS_GROUP_TYPE['UNIVERSAL'] == pyadconstants.ADS_GROUP_TYPE['UNIVERSAL']:
             return 'UNIVERSAL'
         else:
             return 'LOCAL'
@@ -76,7 +77,7 @@ class ADGroup(ADObject):
     def set_group_scope(self, new_scope): 
         """Sets group scope. new_scope expects GLOBAL, UNIVERSAL, or LOCAL."""
         if new_scope in ('LOCAL','GLOBAL','UNIVERSAL'):
-            self.update_attribute('groupType',(self.get_attribute('groupType',False) & pyADConstants.ADS_GROUP_TYPE['SECURITY_ENABLED']) | pyADConstants.ADS_GROUP_TYPE[new_scope])
+            self.update_attribute('groupType',(self.get_attribute('groupType',False) & pyadconstants.ADS_GROUP_TYPE['SECURITY_ENABLED']) | pyadconstants.ADS_GROUP_TYPE[new_scope])
         else:
             raise InvalidValue("new_scope",new_scope,('LOCAL','GLOBAL','UNIVERSAL'))
 
@@ -90,10 +91,10 @@ class ADGroup(ADObject):
     def set_group_type(self, new_type):
         """Sets group type. new_type expects DISTRIBUTION or SECURITY."""
         if new_type == 'DISTRIBUTION': 
-            self.update_attribute('groupType',(self.get_attribute('groupType',False) ^ pyADConstants.ADS_GROUP_TYPE['SECURITY_ENABLED']))
+            self.update_attribute('groupType',(self.get_attribute('groupType',False) ^ pyadconstants.ADS_GROUP_TYPE['SECURITY_ENABLED']))
         elif new_type == 'SECURITY':
             self.update_attribute('groupType',(self.get_attribute('groupType',False)\
-                ^ pyADConstants.ADS_GROUP_TYPE['SECURITY_ENABLED'])\
+                ^ pyadconstants.ADS_GROUP_TYPE['SECURITY_ENABLED'])\
                 | _ADS_GROUP_TYPE['SECURITY_ENABLED'])
         else:
             raise InvalidValue("new_type",new_type,('DISTRIBUTION','SECURITY'))

@@ -73,6 +73,10 @@ class ADObject(ADBase):
         prefix = 'ou' if self.type == 'organizationalUnit' else 'cn'
         return '='.join((prefix, self.get_attribute(prefix, False)))
 
+    def __get_object_sid(self):
+        sid = self.objectSid
+        return pyadutils.convert_sid(sid) if sid else None
+
     dn = property(fget=lambda self: self.__distinguished_name, doc="Distinguished Name (DN) of the object")
     prefixed_cn = property(fget=__get_prefixed_cn, doc="Prefixed CN (such as 'cn=mycomputer' or 'ou=mycontainer' of the object")
     guid = property(fget=lambda self: self.__object_guid, doc="Object GUID of the object")
@@ -80,6 +84,7 @@ class ADObject(ADBase):
     type = property(fget=lambda self: self._type, doc="pyAD object type (user, computer, group, organizationalUnit, domain).")
     parent_container_path = property(fget=lambda self: self.dn.split(',',1)[1], doc="Returns the DN of the object's parent container.")
     guid_str = property(fget=lambda self: str(self.guid)[1:-1], doc="Object GUID of the object")
+    sid = property(fget=__get_object_sid, doc='Get the SID of the Active Directory object')
     
     def __hash__(self): 
         # guid is always unique so that we can depend on that for providing a unique hash

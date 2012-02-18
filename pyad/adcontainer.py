@@ -2,6 +2,7 @@ from adobject import *
 from aduser import ADUser
 from adcomputer import ADComputer
 from adgroup import ADGroup
+import pyadconstants
 
 class ADContainer(ADObject):
     def get_children_iter(self, recursive=False, filter_=None):
@@ -46,9 +47,9 @@ class ADContainer(ADObject):
         try:
             obj = self.__create_object('group', name)
             obj.Put('sAMAccountName',name)
-            val = pyADConstants.ADS_GROUP_TYPE[scope]
+            val = pyadconstants.ADS_GROUP_TYPE[scope]
             if security_enabled: 
-                val = val | pyADConstants.ADS_GROUP_TYPE['SECURITY_ENABLED']
+                val = val | pyadconstants.ADS_GROUP_TYPE['SECURITY_ENABLED']
             obj.Put('groupType',val)
             obj.SetInfo()
             pyadobj = ADGroup.from_com_object(obj)
@@ -57,7 +58,7 @@ class ADContainer(ADObject):
         except pywintypes.com_error, e: 
             pyadutils.pass_up_com_exception(e)
 
-    def create_container(self, name, optional_attriutes={}):
+    def create_container(self, name, optional_attributes={}):
         try:
             obj = self.__create_object('organizationalUnit', name)
             obj.SetInfo()

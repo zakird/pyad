@@ -19,7 +19,7 @@ setup(
     packages=[
         'pyad'
     ],
-    long_description = read('README'),
+    long_description = read('README.rst'),
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: BSD License",

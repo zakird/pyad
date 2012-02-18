@@ -13,12 +13,12 @@ A copy of the GNU General Public License is available at <http://www.gnu.org/lic
 Basics
 ------
 
-Active Directory objects are represented by standard python objects. There are classes for all major types of Active Directory objects: ADComputer, ADContainer, ADDomain, ADGroup, ADUser, all of which inherit from ADObject. It is possible to connect to objects via CN, DN, and GUID. Example::
+Active Directory objects are represented by standard python objects. There are classes for all major types of Active Directory objects: ADComputer, ADContainer, ADDomain, ADGroup, ADUser, all of which inherit from ADObject. It is possible to connect to objects via CN, DN, and GUID. The type will automatically be selected at runtime. Example::
 
-    import pyad
-    u = pyad.aduser.ADUser.from_cn("user1")
-    c = pyad.adcomputer.ADComputer.from_dn("cn=WS1,ou=Workstations,dc=domain,dc=com")
-    g = pyad.adgroup.ADGroup.from_cn("group1")
+    from pyad import pyad
+    u = pyad.from_cn("user1")
+    c = pyad.from_dn("cn=WS1,ou=Workstations,dc=domain,dc=com")
+    g = pyad.from_cn("group1")
     
 It is possible to read attribute values in two ways.::
 
@@ -104,3 +104,4 @@ It is also possible to make queries to find objects. Example::
 	)
 	for r in q.get_results():
 		print r['distinguishedname']
+
