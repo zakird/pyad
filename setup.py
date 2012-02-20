@@ -12,6 +12,7 @@ setup(
     author_email = "zakird@gmail.com",
     maintainer = "Zakir Durumeric",
     maintainer_email = "zakird@gmail.com",
+    download_url = " https://github.com/zakird/pyad/tarball/master",
     url = "https://github.com/zakird/pyad",
     description = "An Object-Oriented Active Directory management framework built on ADSI",
     license = "GNUv3",
