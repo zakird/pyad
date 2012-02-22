@@ -13,7 +13,7 @@ class ADContainer(ADObject):
                 for c in q.get_children_iter(recursive=recursive):
                     if not filter_ or c.__class__ in filter_: 
                         yield c
-            if not filter or q.__class__ in filter_: 
+            if not filter_ or q.__class__ in filter_: 
                 yield q
     
     def get_children(self, recursive=False, filter_=None): 
