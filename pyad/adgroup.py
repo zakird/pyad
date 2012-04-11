@@ -36,7 +36,7 @@ class ADGroup(ADObject):
         # of group B and group B is a member of group A. 
         m = [] 
         for dn in self.get_attribute('member'):
-            pyADobj = pyAD(dn)
+            pyADobj = ADObject(dn)
             if pyADobj.type == 'group' and pyADobj.guid not in processedGroups:
                 if recursive:
                     m.extend(pyADobj._get_members(recursive=True, 
