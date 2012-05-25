@@ -307,7 +307,7 @@ class ADObject(ADBase):
     def rename(self, new_name, set_sAMAccountName=True):
         """Renames the current object within its current organizationalUnit.
         new_name expects the new name of the object (just CN not prefixed CN or distinguishedName)."""
-        parent = self.get_parent_container()
+        parent = self.parent_container
         if self.type == 'organizationalUnit': pcn = 'ou='
         else: pcn = 'cn='
         pcn += new_name
