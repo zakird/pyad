@@ -300,7 +300,8 @@ class ADObject(ADBase):
             pyadutils.pass_up_com_exception(excpt)
         new_dn = ','.join((self.prefixed_cn,new_ou_object.dn))
         time.sleep(.5)
-        self.__ads_path = pyadutils.generate_ads_path(new_dn, 'LDAP', self.default_ldap_server, self.default_ldap_port)
+        self.__ads_path = pyadutils.generate_ads_path(new_dn, 'LDAP', 
+                self.default_ldap_server, self.default_ldap_port)
         self._ldap_adsi_obj = _adsi_provider.getObject('',self.__ads_path)
         self.__distinguished_name = self.get_attribute('distinguishedName',False)
     
@@ -308,16 +309,19 @@ class ADObject(ADBase):
         """Renames the current object within its current organizationalUnit.
         new_name expects the new name of the object (just CN not prefixed CN or distinguishedName)."""
         parent = self.parent_container
-        if self.type == 'organizationalUnit': pcn = 'ou='
-        else: pcn = 'cn='
+        if self.type == 'organizationalUnit': 
+            pcn = 'ou='
+        else: pcn = 
+            'cn='
         pcn += new_name
         try:
-            if self.type in ('user','computer','group') and set_sAMAccountName:
+            if self.type in ('user', 'computer', 'group') and set_sAMAccountName:
                 self._ldap_adsi_obj.Put('sAMAccountName', new_name)
-            parent._ldap_adsi_obj.MoveHere(('LDAP://'+self.dn), pcn)
-            self._ldap_adsi_obj.GetInfoEx((distinguishedName, cn), 0)
-            self.__distinguishedName = self.get_attribute('distinguishedName',False)
-        except pywintypes.com_error, excpt: 
+            parent._ldap_adsi_obj.MoveHere(('LDAP://' + self.dn), pcn)
+            time.sleep(.5)
+            self._ldap_adsi_obj.GetInfoEx(("distinguishedName", "cn"), 0)
+            self.__distinguishedName = self.get_attribute('distinguishedName', False)
+        except pywintypes.com_error, excpt:
             pyadutils.pass_up_com_exception(excpt)
     
     def add_to_group(self, group): 

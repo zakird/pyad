@@ -7,7 +7,7 @@ def read(fname):
 
 setup(
     name = "pyad",
-    version = "0.4.12",
+    version = "0.4.13",
     author = "Zakir Durumeric",
     author_email = "zakird@gmail.com",
     maintainer = "Zakir Durumeric",
