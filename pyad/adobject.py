@@ -121,7 +121,7 @@ class ADObject(ADBase):
         """Initializes the global catalog ADSI com object to be 
         used when querying the global catalog instead of the domain directly."""
         if not self._gc_adsi_obj:
-            self._gc_adsi_obj = _adsi_provider.GetObject('',pyadutils.generate_ads_path(self.dn, 'GC', options.get('server'), options.get('port')))
+            self._gc_adsi_obj = self.adsi_provider.GetObject('',pyadutils.generate_ads_path(self.dn, 'GC', options.get('server'), options.get('port')))
     
     def _init_schema_object(self): 
         if not self._schema_adsi_obj:
@@ -302,7 +302,7 @@ class ADObject(ADBase):
         time.sleep(.5)
         self.__ads_path = pyadutils.generate_ads_path(new_dn, 'LDAP', 
                 self.default_ldap_server, self.default_ldap_port)
-        self._ldap_adsi_obj = _adsi_provider.getObject('', self.__ads_path)
+        self._ldap_adsi_obj = self.adsi_provider.getObject('', self.__ads_path)
         self.__distinguished_name = self.get_attribute('distinguishedName', False)
     
     def rename(self, new_name, set_sAMAccountName=True):
@@ -325,7 +325,7 @@ class ADObject(ADBase):
         time.sleep(.5)
         self.__ads_path = pyadutils.generate_ads_path(new_dn, 'LDAP', 
                 self.default_ldap_server, self.default_ldap_port)
-        self._ldap_adsi_obj = _adsi_provider.getObject('', self.__ads_path)
+        self._ldap_adsi_obj = self.adsi_provider.getObject('', self.__ads_path)
         self.__distinguishedName = self.get_attribute('distinguishedName', False)
 
     
