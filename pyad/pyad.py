@@ -20,3 +20,13 @@ def from_dn(distinguished_name, options={}):
     except InvalidObjectException:
         return None
 
+def from_guid(cls, guid, options={}):
+    "Generates ADObject based on  GUID"
+    try:
+        guid = "<GUID=%s>" % guid.strip('}').strip('{')
+        q = ADObject.from_dn(guid, options)
+        if q.type in ADObject._py_ad_object_mappings.keys():
+            q.__class__ = ADObject._py_ad_object_mappings[q.type]
+        return q
+    except InvalidObjectException:
+        return None

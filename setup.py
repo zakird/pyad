@@ -1,13 +1,17 @@
 import os
+import os.path
 from setuptools import setup
 
 
 def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+    if os.path.exists(fname):
+    	return open(os.path.join(os.path.dirname(__file__), fname)).read()
+    else:
+        return ''
 
 setup(
     name = "pyad",
-    version = "0.4.17",
+    version = "0.4.18",
     author = "Zakir Durumeric",
     author_email = "zakird@gmail.com",
     maintainer = "Zakir Durumeric",
