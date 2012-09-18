@@ -5,8 +5,7 @@ import aduser, adcomputer, addomain, addomain, adgroup, adobject, pyadconstants,
 def from_cn(common_name, search_base=None, options={}):
     try:
         q = ADObject.from_cn(common_name, search_base, options)
-        if q.type in ADObject._py_ad_object_mappings.keys():
-            q.__class__ = ADObject._py_ad_object_mappings[q.type]
+        q.adjust_pyad_type()
         return q
     except invalidResults:
         return None
@@ -14,8 +13,7 @@ def from_cn(common_name, search_base=None, options={}):
 def from_dn(distinguished_name, options={}):
     try:
         q = ADObject.from_dn(distinguished_name,options)
-        if q.type in ADObject._py_ad_object_mappings.keys():
-            q.__class__ = ADObject._py_ad_object_mappings[q.type]
+        q.adjust_pyad_type()
         return q
     except InvalidObjectException:
         return None
@@ -25,8 +23,7 @@ def from_guid(cls, guid, options={}):
     try:
         guid = "<GUID=%s>" % guid.strip('}').strip('{')
         q = ADObject.from_dn(guid, options)
-        if q.type in ADObject._py_ad_object_mappings.keys():
-            q.__class__ = ADObject._py_ad_object_mappings[q.type]
+        q.adjust_pyad_type()
         return q
     except InvalidObjectException:
         return None
