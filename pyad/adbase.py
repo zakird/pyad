@@ -32,17 +32,25 @@ _default_detected_forest = __default_domain_obj.Get("rootDomainNamingContext")
 _default_detected_domain = __default_domain_obj.Get("defaultNamingContext")
 
 class ADBase(object):
-    """Base class that is utilized by all objects within package to help
-    store defaults. (search, query, all AD objects)"""
+    """
+        Base class that is utilized by all objects within package to help
+    store defaults. (search, query, all AD objects)
+    """
     default_ldap_server = None
     default_gc_server = None
     default_ldap_port = None
     default_gc_port = None
+    default_ldap_protocol = 'LDAP'
+    default_ldap_usn = None
+    default_ldap_pwd = None
+    default_ldap_authentication_flag = 0 #No credentials
+    default_ldap_usn = None
+    default_ldap_pwd = None
     default_domain = _default_detected_domain
     default_forest = _default_detected_forest
     adsi_provider = _adsi_provider
 
 def set_defaults(**kwargs):
     for k, v in kwargs.iteritems():
-        assert k in ('ldap_server','gc_server','ldap_port','gc_port')
+        assert k in ('ldap_server','gc_server','ldap_port','gc_port','ldap_protocol','ldap_authentication_flag', 'ldap_usn', 'ldap_pwd')
         setattr(ADBase, '_'.join(('default',k)), v)
