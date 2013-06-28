@@ -24,20 +24,6 @@ class ADObject(ADBase):
             if 'ssl' in options and options['ssl'] is True:
                 self.default_ldap_protocol = 'LDAPS'
             if 'authentication_flag' in options:
-                # visit http://msdn.microsoft.com/en-us/library/windows/desktop/aa772247(v=vs.85).aspx for explanations
-                #ADS_SECURE_AUTHENTICATION  = 0x1,1
-                #ADS_USE_ENCRYPTION         = 0x2,2
-                #ADS_USE_SSL                = 0x2,2
-                #ADS_READONLY_SERVER        = 0x4,4
-                #ADS_PROMPT_CREDENTIALS     = 0x8,8
-                #ADS_NO_AUTHENTICATION      = 0x10,16
-                #ADS_FAST_BIND              = 0x20,32
-                #ADS_USE_SIGNING            = 0x40,64 
-                #ADS_USE_SEALING            = 0x80,128
-                #ADS_USE_DELEGATION         = 0x100,256
-                #ADS_SERVER_BIND            = 0x200,512
-                #ADS_NO_REFERRAL_CHASING    = 0x400,1024
-                #ADS_AUTH_RESERVED          = 0x80000000
                 self.default_ldap_authentication_flag =  options['authentication_flag']
             if 'username' in options:
                 self.default_ldap_usn=options['username']
