@@ -91,7 +91,7 @@ def generate_ads_path(distinguished_name, type_, server=None, port=None):
      - server: FQDN of domain controller if necessary to connect to a particular server (optional unless port is defined).
      - port: port number for directory service if not default port. If port is specified, server must be specified (optional)."""
     
-    if type_ == "LDAP":
+    if type_ == "LDAP"  or type_ == "LDAPS":
         server = server if server else ADBase.default_ldap_server
         port = port if port else ADBase.default_ldap_port
     elif type_ == "GC":
