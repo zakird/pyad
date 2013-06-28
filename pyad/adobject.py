@@ -4,6 +4,7 @@ from adbase import *
 
 class ADObject(ADBase):
     """Python object that represents any active directory object."""
+
     _ldap_adsi_obj = None
     _gc_adsi_obj = None
     _schema_adsi_obj = None
@@ -20,14 +21,30 @@ class ADObject(ADBase):
                 self.default_ldap_server = options['server']
             if 'port' in options:
                 self.default_ldap_port = options['port']
-            self.__ads_path = pyadutils.generate_ads_path(distinguished_name, 'LDAP', self.default_ldap_server, self.default_ldap_port)
+            if 'ssl' in options and options['ssl'] is True:
+                self.default_ldap_protocol = 'LDAPS'
+            if 'authentication_flag' in options:
+                self.default_ldap_authentication_flag =  options['authentication_flag']
+            if 'username' in options:
+                self.default_ldap_usn=options['username']
+            if 'password' in options:
+                self.default_ldap_pwd=options['password']
+
+            self.__ads_path = pyadutils.generate_ads_path(distinguished_name, self.default_ldap_protocol, self.default_ldap_server, self.default_ldap_port)
+
             try:
                 self._ldap_adsi_obj = self.adsi_provider.getObject('',self.__ads_path)
+                if self.default_ldap_authentication_flag > 0:
+                    self._ldap_adsi_obj = self.adsi_provider.getObject('',self.default_ldap_protocol+":").OpenDSObject(self.__ads_path, self.default_ldap_usn, self.default_ldap_pwd, self.default_ldap_authentication_flag)
             except pywintypes.com_error, excpt:
                 additional_info = {
                     'distinguished_name':distinguished_name,
+                    'protocol':self.default_ldap_protocol,
                     'server':self.default_ldap_server,
-                    'port':self.default_ldap_port
+                    'port':self.default_ldap_port,
+                    'username':self.default_ldap_usn,
+                    'password':self.default_ldap_pwd,
+                    'authentication_flag':self.default_ldap_authentication_flag
                 }
                 pyadutils.pass_up_com_exception(excpt, additional_info)
         else:
@@ -35,8 +52,10 @@ class ADObject(ADBase):
 
         # by pulling the DN from object instead of what is passed in, we gaurantee correct capitalization
         self.__distinguished_name = self.get_attribute('distinguishedName', False)
-        self.__object_guid = pyadutils.convert_guid(self.get_attribute('objectGUID', False))
-        # Set pyAD Object Type
+        self.__object_guid = self.get_attribute('objectGUID', False)
+        if self.__object_guid is not None:
+            self.__object_guid = pyadutils.convert_guid(self.__object_guid)
+        # Set pyAD Object Type        
         occn = self.get_attribute('objectCategory',False)
         if occn:
             # pull out CN from DN
@@ -47,7 +66,16 @@ class ADObject(ADBase):
             else:
                 self._type = object_category_cn.lower()
         else:
-            self._type = 'unknown'
+            # Sometimes you don't have acccess to objectCategory attribute, try, with objectClass attribute
+            objClass = self.get_attribute('objectClass',True)
+            if 'domain' in objClass:
+                self._type = 'domain'
+            elif 'user' in objClass:
+                self._type = 'user'
+            elif 'organizationalUnit' in objClass:
+                self._type = 'organizationalUnit'
+            else:
+                self._type = 'unknown'
 
     @classmethod
     def from_guid(cls, guid, options={}):
@@ -260,7 +288,7 @@ class ADObject(ADBase):
                 nv = self.get_attribute('userAccountControl',False) ^ ADS_USER_FLAG[userFlag]
             else:
                 nv = self.get_attribute('userAccountControl',False)
-            # i f the flag is true, then the value is present and
+            # if the flag is true, then the value is present and
             # we add it to the starting point with B-OR.
             # Otherwise, if it's false, it's just not present,
             # so we leave it without any mention of the flag as in previous step.
@@ -294,13 +322,13 @@ class ADObject(ADBase):
 
         new_ou_object expects a ADContainer object where the current object will be moved to."""
         try:
-            new_ou_object._ldap_adsi_obj.MoveHere(('LDAP://'+self.dn), self.prefixed_cn)
+            new_ou_object._ldap_adsi_obj.MoveHere((self.default_ldap_protocol+'://'+self.dn), self.prefixed_cn)
             new_ou_object._flush()
         except pywintypes.com_error, excpt:
             pyadutils.pass_up_com_exception(excpt)
         new_dn = ','.join((self.prefixed_cn, new_ou_object.dn))
         time.sleep(.5)
-        self.__ads_path = pyadutils.generate_ads_path(new_dn, 'LDAP',
+        self.__ads_path = pyadutils.generate_ads_path(new_dn, self.default_ldap_protocol,
                 self.default_ldap_server, self.default_ldap_port)
         self._ldap_adsi_obj = self.adsi_provider.getObject('', self.__ads_path)
         self.__distinguished_name = self.get_attribute('distinguishedName', False)
@@ -317,17 +345,16 @@ class ADObject(ADBase):
         try:
             if self.type in ('user', 'computer', 'group') and set_sAMAccountName:
                 self._ldap_adsi_obj.Put('sAMAccountName', new_name)
-            parent._ldap_adsi_obj.MoveHere(('LDAP://' + self.dn), pcn)
+            parent._ldap_adsi_obj.MoveHere((self.default_ldap_protocol+'://' + self.dn), pcn)
             parent._flush()
         except pywintypes.com_error, excpt:
             pyadutils.pass_up_com_exception(excpt)
         new_dn = ','.join((pcn, parent.dn))
         time.sleep(.5)
-        self.__ads_path = pyadutils.generate_ads_path(new_dn, 'LDAP',
+        self.__ads_path = pyadutils.generate_ads_path(new_dn, self.default_ldap_protocol,
                 self.default_ldap_server, self.default_ldap_port)
         self._ldap_adsi_obj = self.adsi_provider.getObject('', self.__ads_path)
         self.__distinguishedName = self.get_attribute('distinguishedName', False)
-
 
     def add_to_group(self, group):
         """Adds current object to the specified group.
