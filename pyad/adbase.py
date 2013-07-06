@@ -35,7 +35,7 @@ _default_detected_domain = __default_domain_obj.Get("defaultNamingContext")
 class ADBase(object):
     """Base class that is utilized by all objects within package to help
     store defaults. (search, query, all AD objects)"""
-    
+
     DEFAULTS_OPTIONS_MAPPINGS = [
         ("default_ldap_server", "server"),
         ("default_gc_server", "gc_server"),
@@ -44,9 +44,9 @@ class ADBase(object):
         ("default_username", "username"),
         ("default_password", "password"),
         ("default_ldap_authentication_flag", "authentication_flag"),
-        ("default_use_ssl", "ssl")
+        ("default_ssl", "ssl")
     ]
-    
+
     default_ssl = False
     default_ldap_server = None
     default_gc_server = None
@@ -64,11 +64,9 @@ class ADBase(object):
         for (default, key) in ADBase.DEFAULTS_OPTIONS_MAPPINGS:
             if key in options:
                 setattr(self, default, options[key])
-    
+
     def _make_options(self):
         options = dict()
-        if self.default_ldap_protocol == 'LDAPS':
-            options['ssl'] = True
         for (default, key) in ADBase.DEFAULTS_OPTIONS_MAPPINGS:
             val = getattr(self, default)
             if val:

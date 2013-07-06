@@ -6,7 +6,9 @@ def convert_error_code(error_code):
 def interpret_com_exception(excp, additional_info={}): #expects the actualy pywintypes.com_error exception that's thrown... 
     d = {}
     d['error_num'] = convert_error_code(excp.args[2][5])
-    # for some reason hex() includes the L for long in the hex... however since it's a string, we don't care... since L would never be in a hex code, we can safely just remove it. 
+    # for some reason hex() includes the L for long in the hex...
+    # however since it's a string, we don't care... 
+    # since L would never be in a hex code, we can safely just remove it. 
     d['error_code'] = hex(d['error_num']).rstrip('L')
     if d['error_code'][0:7] == '0x80005':
         if d['error_num'] in GENERIC_ADSI_ERRORS.keys():
