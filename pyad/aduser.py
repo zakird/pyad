@@ -4,12 +4,15 @@ from adsearch import _ad_query_obj
 class ADUser(ADObject):
     
     @classmethod
-    def create(cls, name, container_object, password=None, upn_suffix=None, enable=True, optional_attributes={}):
-        return container_object.create_user(name=name,
+    def create(cls, name, container_object, password=None, upn_suffix=None,
+                    enable=True, optional_attributes={}):
+        return container_object.create_user(
+            name=name,
             password=password,
             upn_suffix=upn_suffix,
             enable=enable,
-            optional_attributes=optional_attributes)
+            optional_attributes=optional_attributes
+        )
 
     def set_password(self, password):
         try:

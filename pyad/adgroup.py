@@ -12,15 +12,17 @@ class ADGroup(ADObject):
 
     def add_members(self, members):
         """Accepts a list of pyAD objects or a single pyAD object and adds as members to the group."""
-        return self.append_to_attribute('member', map(lambda member: member.dn, pyadutils.generate_list(members)))
+        members = map(lambda member: member.dn, pyadutils.generate_list(members))
+        return self.append_to_attribute('member', members)
 
     def remove_members(self, members):
         """Accepts a list of pyAD objects or a single pyAD object and removes these as members from the group."""
-        return self.remove_from_attribute('member', map(lambda member: member.dn, pyadutils.generate_list(members)))
+        members = map(lambda member: member.dn, pyadutils.generate_list(members))
+        return self.remove_from_attribute('member', members)
 
     def remove_all_members(self):
         """Removes all members of the group."""
-        return self.remove_from_attribute('member',self.get_attribute('member'))
+        return self.remove_from_attribute('member', self.get_attribute('member'))
 
     def get_members(self, recursive=False, ignoreGroups=False):
         """Returns a list of group members.
@@ -36,7 +38,7 @@ class ADGroup(ADObject):
         # of group B and group B is a member of group A. Yes, this can actually happen.
         m = []
         for dn in self.get_attribute('member'):
-            pyADobj = ADObject(dn)
+            pyADobj = ADObject(dn, options=self._make_options)
             pyADobj.adjust_pyad_type()
             if pyADobj.type == 'group' and pyADobj.guid not in processedGroups:
                 if recursive:
@@ -68,9 +70,11 @@ class ADGroup(ADObject):
     def get_group_scope(self):
         """Returns the group scope GLOBAL, UNIVERSAL, or LOCAL."""
         group_type = self.get_attribute('groupType', False)
-        if group_type & pyadconstants.ADS_GROUP_TYPE['GLOBAL'] == pyadconstants.ADS_GROUP_TYPE['GLOBAL']:
+        c_global = pyadconstants.ADS_GROUP_TYPE['GLOBAL']
+        c_universal = pyadconstants.ADS_GROUP_TYPE['UNIVERSAL']
+        if group_type & pyadconstants.ADS_GROUP_TYPE['GLOBAL'] == c_global:
             return 'GLOBAL'
-        elif group_type & pyadconstants.ADS_GROUP_TYPE['UNIVERSAL'] == pyadconstants.ADS_GROUP_TYPE['UNIVERSAL']:
+        elif group_type & pyadconstants.ADS_GROUP_TYPE['UNIVERSAL'] == c_universal:
             return 'UNIVERSAL'
         else:
             return 'LOCAL'
@@ -78,13 +82,17 @@ class ADGroup(ADObject):
     def set_group_scope(self, new_scope):
         """Sets group scope. new_scope expects GLOBAL, UNIVERSAL, or LOCAL."""
         if new_scope in ('LOCAL','GLOBAL','UNIVERSAL'):
-            self.update_attribute('groupType',(self.get_attribute('groupType',False) & pyadconstants.ADS_GROUP_TYPE['SECURITY_ENABLED']) | pyadconstants.ADS_GROUP_TYPE[new_scope])
+            self.update_attribute('groupType',(self.get_attribute('groupType',False) \
+                            & pyadconstants.ADS_GROUP_TYPE['SECURITY_ENABLED']) \
+                            | pyadconstants.ADS_GROUP_TYPE[new_scope])
         else:
             raise InvalidValue("new_scope",new_scope,('LOCAL','GLOBAL','UNIVERSAL'))
 
     def get_group_type(self):
         """Returns group type DISTRIBUTION or SECURITY."""
-        if self.get_attribute('groupType',False) in (2,4,8): # 0x2, 0x4, 0x8 are the distribution group types since a security group must include -0x80000000.
+        # 0x2, 0x4, 0x8 are the distribution group types since
+        # a security group must include -0x80000000.
+        if self.get_attribute('groupType',False) in (2,4,8): 
             return 'DISTRIBUTION'
         else:
             return 'SECURITY'
@@ -92,11 +100,12 @@ class ADGroup(ADObject):
     def set_group_type(self, new_type):
         """Sets group type. new_type expects DISTRIBUTION or SECURITY."""
         if new_type == 'DISTRIBUTION':
-            self.update_attribute('groupType',(self.get_attribute('groupType',False) ^ pyadconstants.ADS_GROUP_TYPE['SECURITY_ENABLED']))
+            self.update_attribute('groupType',(self.get_attribute('groupType',False) \
+                            ^ pyadconstants.ADS_GROUP_TYPE['SECURITY_ENABLED']))
         elif new_type == 'SECURITY':
-            self.update_attribute('groupType',(self.get_attribute('groupType',False)\
-                ^ pyadconstants.ADS_GROUP_TYPE['SECURITY_ENABLED'])\
-                | _ADS_GROUP_TYPE['SECURITY_ENABLED'])
+            self.update_attribute('groupType',(self.get_attribute('groupType',False) \
+                            ^ pyadconstants.ADS_GROUP_TYPE['SECURITY_ENABLED']) \
+                            | _ADS_GROUP_TYPE['SECURITY_ENABLED'])
         else:
             raise InvalidValue("new_type",new_type,('DISTRIBUTION','SECURITY'))
 
@@ -119,15 +128,17 @@ def ___p_get_memberOfs(self, recursive=False, scope='all', processed_groups=[]):
     if self not in processed_groups:
         if scope in ('domain','all'):
             for dn in self.get_attribute('memberOf'):
-                obj = ADGroup.from_dn(dn)
+                obj = ADGroup.from_dn(dn, options=self._make_options())
                 if recursive and obj not in processed_groups and dn != self.dn:
-                    processed_groups.extend(obj._get_memberOfs(recursive, scope, processed_groups))
+                    new_members = obj._get_memberOfs(recursive, scope, processed_groups)
+                    processed_groups.extend(new_members)
                 processed_groups.append(obj)
         if scope in ('forest','all'):
             for dn in self.get_attribute('memberOf',source='GC'):
                 obj = ADGroup.from_dn(dn)
                 if recursive and obj not in processed_groups and dn != self.dn:
-                    processed_groups.extend(obj._get_memberOfs(recursive, scope, processed_groups))
+                    new_members = obj._get_memberOfs(recursive, scope, processed_groups)
+                    processed_groups.extend(new_members)
                 processed_groups.append(obj)
     return list(set(processed_groups))
 
