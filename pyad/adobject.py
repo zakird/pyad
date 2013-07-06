@@ -47,28 +47,28 @@ class ADObject(ADBase):
                 flag = ADS_AUTHENTICATION_TYPE['ADS_SECURE_AUTHENTICATION']
                 if self.default_ssl:
                     flag = flag | ADS_AUTHENTICATION_TYPE['ADS_USE_ENCRYPTION']
-            print "flag is ", flag
             self._ldap_adsi_obj = _ds.OpenDSObject(
                     self.__ads_path,
                     self.default_ldap_usn,
                     self.default_ldap_pwd,
-                    1)
+                    flag)
             
         elif self.default_ssl:
+            raise Exception("Using SSL without specifying credentials is currently unsupported due to what appears to be a bug in pywin32.")
             # from: http://msdn.microsoft.com/en-us/library/windows/desktop/aa772247(v=vs.85).aspx
             # If ADS_USE_SSL is not combined with the ADS_SECURE_AUTHENTICATION
             # flag and the supplied credentials are NULL, the bind will be
             # performed anonymously. If ADS_USE_SSL is combined with the 
             # ADS_SECURE_AUTHENTICATION flag and the supplied credentials 
             # are NULL, then the credentials of the calling thread are used.
+            flag = ADS_AUTHENTICATION_TYPE['ADS_SECURE_AUTHENTICATION'] | \
+                            ADS_AUTHENTICATION_TYPE['ADS_USE_ENCRYPTION']
             _ds = self.adsi_provider.getObject('', "LDAP:")
             self._ldap_adsi_obj = _ds.OpenDSObject(
                             self.__ads_path,
-                            '', # username
-                            '', # password
-                            ADS_AUTHENTICATION_TYPE['ADS_USE_ENCRYPTION'] \
-                                    | ADS_AUTHENTICATION_TYPE['ADS_SECURE_AUTHENTICATION']
-            )
+                            None, # username
+                            None, # password
+                            flag)
         else:
             self._ldap_adsi_obj = self.adsi_provider.getObject('', self.__ads_path)
     
@@ -216,11 +216,31 @@ class ADObject(ADBase):
                             options.get('server'), options.get('port')
                     )
             )
+            
+    def __set_gc_adsi_obj(self):
+        path = pyadutils.generate_ads_path(
+                        self.dn,
+                        'GC',
+                        self.default_gc_server,
+                        self.default_gc_port
+        )
+        if self.default_ldap_usn and self.default_ldap_pwd:
+            _ds = self.adsi_provider.getObject('', "LDAP:")
+            flag = ADS_AUTHENTICATION_TYPE['ADS_SECURE_AUTHENTICATION']
+            if self.default_ssl:
+                flag = flag | ADS_AUTHENTICATION_TYPE['ADS_USE_ENCRYPTION']
+            self._gc_adsi_obj = _ds.OpenDSObject(
+                    path,
+                    self.default_ldap_usn,
+                    self.default_ldap_pwd,
+                    flag)
+        else:
+            self._gc_adsi_obj = self.adsi_provider.GetObject('', path)
     
-    def _init_global_catalog_object(self, options={}):
+    def _init_global_catalog_object(self, force=False, options={}):
         """Initializes the global catalog ADSI com object to be
         used when querying the global catalog instead of the domain directly."""
-        if not self._gc_adsi_obj:
+        if not self._gc_adsi_obj and not force:
             self._set_defaults(options)
             self.__set_gc_adsi_obj()
 

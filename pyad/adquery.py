@@ -25,20 +25,17 @@ class ADQuery(ADBase):
     # the methodology for performing a command with credentials
     # and for forcing encryption can be found at http://goo.gl/GGCK5
     
-    def __init__(self, encrypt=True, options={}):
+    def __init__(self, options={}):
         self.__adodb_conn = win32com.client.Dispatch("ADODB.Connection")
-        self.__adodb_conn.Open("Provider=ADSDSOObject;Encrypt Password=True")
-        if encrypt:
-            print dir(self.__adodb_conn)
-			
-            #self.__adodb_conn.Properties("ADSI Flag") = ADS_USE_ENCRYPTION
-        if self.default_ldap_usn:
+        self.__adodb_conn.Open("Provider=ADSDSOObject")
+        if self.default_ldap_usn and self.default_ldap_pwd:
             self.__adodb_conn.Properties("Encrypt Password").value = True
             self.__adodb_conn.Properties("User ID").value = self.default_ldap_usn
             self.__adodb_conn.Properties("Password").value = self.default_ldap_pwd
             adsi_flag = ADQuery.ADS_SECURE_AUTHENTICATION | \
                             ADQuery.ADS_USE_ENCRYPTION
             self.__adodb_conn.Properties("ADSI Flag").value = adsi_flag
+            
         self.reset()
     
     def reset(self):
