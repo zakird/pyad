@@ -16,7 +16,7 @@ class ADObject(ADBase):
     def __set_adsi_obj(self, distinguished_name):
         """Internal method that creates the connection to the backend ADSI object."""
     
-        if self.default_ldap_usn and self.default_ldap_pwd:
+        if self.default_username and self.default_password:
             # from http://msdn.microsoft.com/en-us/library/windows/desktop/aa706065(v=vs.85).aspx
             # With the LDAP provider for Active Directory, you may pass in
             # lpszUserName as one of the following strings:
@@ -49,8 +49,8 @@ class ADObject(ADBase):
                     flag = flag | ADS_AUTHENTICATION_TYPE['ADS_USE_ENCRYPTION']
             self._ldap_adsi_obj = _ds.OpenDSObject(
                     self.__ads_path,
-                    self.default_ldap_usn,
-                    self.default_ldap_pwd,
+                    self.default_username,
+                    self.default_password,
                     flag)
             
         elif self.default_ssl:
@@ -206,8 +206,8 @@ class ADObject(ADBase):
                         self.default_gc_port
             )
             self._ldap_adsi_obj = _ds.OpenDSObject(path,
-                            self.default_ldap_usn,
-                            self.default_ldap_pwd,
+                            self.default_username,
+                            self.default_password,
                             self.default_ldap_authentication_flag
             )
         else:
@@ -224,15 +224,15 @@ class ADObject(ADBase):
                         self.default_gc_server,
                         self.default_gc_port
         )
-        if self.default_ldap_usn and self.default_ldap_pwd:
+        if self.default_username and self.default_password:
             _ds = self.adsi_provider.getObject('', "LDAP:")
             flag = ADS_AUTHENTICATION_TYPE['ADS_SECURE_AUTHENTICATION']
             if self.default_ssl:
                 flag = flag | ADS_AUTHENTICATION_TYPE['ADS_USE_ENCRYPTION']
             self._gc_adsi_obj = _ds.OpenDSObject(
                     path,
-                    self.default_ldap_usn,
-                    self.default_ldap_pwd,
+                    self.default_username,
+                    self.default_password,
                     flag)
         else:
             self._gc_adsi_obj = self.adsi_provider.GetObject('', path)

@@ -41,8 +41,8 @@ class ADBase(object):
         ("default_gc_server", "gc_server"),
         ("default_ldap_port", "port"),
         ("default_gc_port", "gc_port"),
-        ("default_ldap_usn", "username"),
-        ("default_ldap_pwd", "password"),
+        ("default_username", "username"),
+        ("default_password", "password"),
         ("default_ldap_authentication_flag", "authentication_flag"),
         ("default_use_ssl", "ssl")
     ]
@@ -52,8 +52,8 @@ class ADBase(object):
     default_gc_server = None
     default_ldap_port = None
     default_gc_port = None
-    default_ldap_usn = None
-    default_ldap_pwd = None
+    default_username = None
+    default_password = None
     default_ldap_protocol = 'LDAP'
     default_ldap_authentication_flag = 0  # No credentials
     default_domain = _default_detected_domain
