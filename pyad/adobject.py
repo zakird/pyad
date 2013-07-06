@@ -40,23 +40,7 @@ class ADObject(ADBase):
         if adsi_ldap_com_object:
             self._ldap_adsi_obj = adsi_ldap_com_object
         elif distinguished_name:
-            if 'server' in options:
-                self.default_ldap_server = options['server']
-            if 'port' in options:
-                self.default_ldap_port = options['port']
-            if 'ssl' in options and options['ssl'] is True:
-                self.default_ldap_protocol = 'LDAPS'
-            if 'authentication_flag' in options:
-                self.default_ldap_authentication_flag = options['authentication_flag']
-            if 'username' in options:
-                self.default_ldap_usn=options['username']
-            if 'password' in options:
-                self.default_ldap_pwd=options['password']
-            if 'gc_server' in options:
-                self.default_gc_server = options['gc_server']
-            if 'gc_port' in options:
-                self.default_gc_port = options['gc_port']
-
+            self._set_defaults(options)
             self.__ads_path = pyadutils.generate_ads_path(distinguished_name,
                             self.default_ldap_protocol,
                             self.default_ldap_server,
@@ -66,7 +50,8 @@ class ADObject(ADBase):
         else:
             raise Exception("Either a distinguished name or a COM object must be provided to create an ADObject")
 
-        # by pulling the DN from object instead of what is passed in, we gaurantee correct capitalization
+        # by pulling the DN from object instead of what is passed in,
+        # we gaurantee correct capitalization
         self.__distinguished_name = self.get_attribute('distinguishedName', False)
         self.__object_guid = self.get_attribute('objectGUID', False)
         if self.__object_guid is not None:
@@ -76,13 +61,15 @@ class ADObject(ADBase):
         if occn:
             # pull out CN from DN
             object_category_cn = occn.split('=',1)[1].split(",",1)[0]
-            # some object categories are not very human readable so we provide the option to override
+            # some object categories are not very human readable
+            # so we provide the option to override
             if object_category_cn in PYAD_CATEGORY_TYPE_OVERRIDE_MAPPPINGS:
                 self._type = PYAD_CATEGORY_TYPE_OVERRIDE_MAPPPINGS[object_category_cn]
             else:
                 self._type = object_category_cn.lower()
         else:
-            # Sometimes you don't have acccess to objectCategory attribute, try, with objectClass attribute
+            # Sometimes you don't have acccess to objectCategory attribute,
+            # try, with objectClass attribute
             objClass = self.get_attribute('objectClass',True)
             if 'domain' in objClass:
                 self._type = 'domain'
@@ -198,20 +185,7 @@ class ADObject(ADBase):
         """Initializes the global catalog ADSI com object to be
         used when querying the global catalog instead of the domain directly."""
         if not self._gc_adsi_obj:
-            if 'gc_server' in options:
-                self.default_gc_server = options['gc_server']
-            if 'server' in options:
-                self.default_gc_server = options['server']
-            if 'gc_port' in options:
-                self.default_gc_port = options['gc_port']
-            if 'port' in options:
-                self.default_gc_port = options['port']
-            if 'authentication_flag' in options:
-                self.default_ldap_authentication_flag = options['authentication_flag']
-            if 'username' in options:
-                self.default_ldap_usn=options['username']
-            if 'password' in options:
-                self.default_ldap_pwd=options['password']
+            self._set_defaults(options)
             self.__set_gc_adsi_obj()
 
     def _init_schema_object(self):
@@ -312,14 +286,16 @@ class ADObject(ADBase):
     def append_to_attribute(self, attribute, valuesToAppend):
         """Appends values in list valuesToAppend to the specified multi-valued attribute.
         valuesToAppend can contain a single value or a list of multiple values."""
-        difference = list(set(pyadutils.generate_list(valuesToAppend)) - set(self.get_attribute(attribute)))
+        difference = list(set(pyadutils.generate_list(valuesToAppend)) \
+                        - set(self.get_attribute(attribute)))
         if len(difference) != 0:
             self._set_attribute(attribute,3,difference)
             self._flush()
 
     def remove_from_attribute(self, attribute, valuesToRemove):
         """Removes any values in list valuesToRemove from the specified multi-valued attribute."""
-        difference = list(set(pyadutils.generate_list(valuesToRemove)) & set(self.get_attribute(attribute)))
+        difference = list(set(pyadutils.generate_list(valuesToRemove)) \
+                        & set(self.get_attribute(attribute)))
         if len(difference) != 0:
             self._set_attribute(attribute,4,difference)
             self._flush()
@@ -385,7 +361,8 @@ class ADObject(ADBase):
 
         new_ou_object expects a ADContainer object where the current object will be moved to."""
         try:
-            new_ou_object._ldap_adsi_obj.MoveHere((self.default_ldap_protocol+'://'+self.dn), self.prefixed_cn)
+            new_path = self.default_ldap_protocol + '://' + self.dn
+            new_ou_object._ldap_adsi_obj.MoveHere(new_path, self.prefixed_cn)
             new_ou_object._flush()
         except pywintypes.com_error, excpt:
             pyadutils.pass_up_com_exception(excpt)
@@ -409,7 +386,8 @@ class ADObject(ADBase):
         try:
             if self.type in ('user', 'computer', 'group') and set_sAMAccountName:
                 self._ldap_adsi_obj.Put('sAMAccountName', new_name)
-            parent._ldap_adsi_obj.MoveHere((self.default_ldap_protocol+'://' + self.dn), pcn)
+            new_path = self.default_ldap_protocol+'://' + self.dn
+            parent._ldap_adsi_obj.MoveHere(new_path, pcn)
             parent._flush()
         except pywintypes.com_error, excpt:
             pyadutils.pass_up_com_exception(excpt)
@@ -496,7 +474,7 @@ class ADObject(ADBase):
 
     def __get_parent_container(self):
         q = ADObject.from_dn(self.parent_container_path,
-            options={'server':self.default_ldap_server,'port':self.default_ldap_port})
+                options = self._make_options())
         q.adjust_pyad_type()
         return q
     parent_container = property(__get_parent_container)
