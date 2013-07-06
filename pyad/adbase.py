@@ -50,5 +50,6 @@ class ADBase(object):
 
 def set_defaults(**kwargs):
     for k, v in kwargs.iteritems():
-        assert k in ('ldap_server', 'gc_server', 'ldap_port', 'gc_port', 'ldap_protocol', 'ldap_authentication_flag', 'ldap_usn', 'ldap_pwd')
+        assert k in ('ldap_server', 'gc_server', 'ldap_port', 'gc_port', 'ldap_protocol',
+                        'ldap_authentication_flag', 'ldap_usn', 'ldap_pwd')
         setattr(ADBase, '_'.join(('default', k)), v)

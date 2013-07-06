@@ -2,25 +2,69 @@ from adbase import *
 import pyadutils
 
 class ADQuery(ADBase):
-    def __init__(self):
+    # Requests secure authentication. When this flag is set,
+    # Active Directory will use Kerberos, and possibly NTLM,
+    # to authenticate the client.
+    ADS_SECURE_AUTHENTICATION = 1
+    # Requires ADSI to use encryption for data
+    # exchange over the network.
+    ADS_USE_ENCRYPTION = 2
+    
+    # ADS_SCOPEENUM enumeration. Documented at http://goo.gl/83G1S
+    
+    # Searches the whole subtree, including all the
+    # children and the base object itself.
+    ADS_SCOPE_SUBTREE = 2
+    # Searches one level of the immediate children,
+    # excluding the base object.
+    ADS_SCOPE_ONELEVEL = 1
+    # Limits the search to the base object.
+    # The result contains, at most, one object.
+    ADS_SCOPE_BASE = 0
+    
+    # the methodology for performing a command with credentials
+    # and for forcing encryption can be found at http://goo.gl/GGCK5
+    
+    def __init__(self, encrypt=True, options={}):
         self.__adodb_conn = win32com.client.Dispatch("ADODB.Connection")
         self.__adodb_conn.Open("Provider=ADSDSOObject")
+        if encrypt:
+            self.__adodb_conn.Properties("ADSI Flag") = ADS_USE_ENCRYPTION
+        if self.default_ldap_usn:
+            self.__adodb_conn.Properties("Encrypt Password") = True
+            self.__adodb_conn.Properties("User ID") = self.default_ldap_usn
+            self.__adodb_conn.Properties("Password") = self.default_ldap_pwd
+            adsi_flag = ADQuery.ADS_SECURE_AUTHENTICATION | \
+                            ADQuery.ADS_USE_ENCRYPTION
+            self.__adodb_conn.Properties("ADSI Flag") = adsi_flag
         self.reset()
     
     def reset(self):
         self.__rs = self.__rc = None
         self.__queried = False
 
-    def execute_query(self, attributes=["distinguishedName"], where_clause=None, type="LDAP", base_dn=None, server=None, port=None):
+    def execute_query(self, attributes=["distinguishedName"], where_clause=None,
+                    type="LDAP", base_dn=None, page_size=1000, options={}):
+        assert type in ("LDAP", "GC")
         if not base_dn:
             if type == "LDAP": 
                 base_dn = self.default_domain
             if type == "GC": 
                 base_dn = default_forest
-        query = "SELECT %s FROM '%s'" % (','.join(attributes), pyadutils.generate_ads_path(base_dn, type, server, port))
+        query = "SELECT %s FROM '%s'" % (','.join(attributes),
+                pyadutils.generate_ads_path(base_dn, type,
+                        self.default_ldap_server, self.default_ldap_port))
         if where_clause:
             query = ' '.join((query, 'WHERE', where_clause))
-        self.__rs,self.__rc = self.__adodb_conn.Execute(query)
+            
+        command = CreateObject("ADODB.Command")
+        assert(command)
+        command.ActiveConnection = self.__adodb_conn
+        command.Properties("Page Size") = page_size
+        command.Properties("Searchscope") = ADQuery.ADS_SCOPE_SUBTREE
+        
+        command.CommandText = query
+        self.__rs = self.__adodb_conn.Execute()
         self.__queried = True
 
     def get_row_count(self):

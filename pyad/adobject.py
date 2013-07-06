@@ -12,7 +12,30 @@ class ADObject(ADBase):
     _mandatory_attributes = None
     _optional_attributes = None
     _py_ad_object_mappings = {}
-
+    
+    def __set_adsi_obj(self):
+        try:
+             if self.default_ldap_authentication_flag > 0:
+                 _ds = self.adsi_provider.getObject('', self.default_ldap_protocol+":").
+                 self._ldap_adsi_obj = _ds.OpenDSObject(self.__ads_path,
+                                 self.default_ldap_usn,
+                                 self.default_ldap_pwd,
+                                 self.default_ldap_authentication_flag
+                 )
+             else:
+                 self._ldap_adsi_obj = self.adsi_provider.getObject('', self.__ads_path)
+         except pywintypes.com_error, excpt:
+             additional_info = {
+                 'distinguished_name':distinguished_name,
+                 'protocol':self.default_ldap_protocol,
+                 'server':self.default_ldap_server,
+                 'port':self.default_ldap_port,
+                 'username':self.default_ldap_usn,
+                 'password':self.default_ldap_pwd,
+                 'authentication_flag':self.default_ldap_authentication_flag
+             }
+             pyadutils.pass_up_com_exception(excpt, additional_info)
+    
     def __init__(self, distinguished_name=None, adsi_ldap_com_object=None, options={}):
         if adsi_ldap_com_object:
             self._ldap_adsi_obj = adsi_ldap_com_object
@@ -24,29 +47,22 @@ class ADObject(ADBase):
             if 'ssl' in options and options['ssl'] is True:
                 self.default_ldap_protocol = 'LDAPS'
             if 'authentication_flag' in options:
-                self.default_ldap_authentication_flag =  options['authentication_flag']
+                self.default_ldap_authentication_flag = options['authentication_flag']
             if 'username' in options:
                 self.default_ldap_usn=options['username']
             if 'password' in options:
                 self.default_ldap_pwd=options['password']
+            if 'gc_server' in options:
+                self.default_gc_server = options['gc_server']
+            if 'gc_port' in options:
+                self.default_gc_port = options['gc_port']
 
-            self.__ads_path = pyadutils.generate_ads_path(distinguished_name, self.default_ldap_protocol, self.default_ldap_server, self.default_ldap_port)
-
-            try:
-                self._ldap_adsi_obj = self.adsi_provider.getObject('',self.__ads_path)
-                if self.default_ldap_authentication_flag > 0:
-                    self._ldap_adsi_obj = self.adsi_provider.getObject('',self.default_ldap_protocol+":").OpenDSObject(self.__ads_path, self.default_ldap_usn, self.default_ldap_pwd, self.default_ldap_authentication_flag)
-            except pywintypes.com_error, excpt:
-                additional_info = {
-                    'distinguished_name':distinguished_name,
-                    'protocol':self.default_ldap_protocol,
-                    'server':self.default_ldap_server,
-                    'port':self.default_ldap_port,
-                    'username':self.default_ldap_usn,
-                    'password':self.default_ldap_pwd,
-                    'authentication_flag':self.default_ldap_authentication_flag
-                }
-                pyadutils.pass_up_com_exception(excpt, additional_info)
+            self.__ads_path = pyadutils.generate_ads_path(distinguished_name,
+                            self.default_ldap_protocol,
+                            self.default_ldap_server,
+                            self.default_ldap_port
+            )
+            self.__set_adsi_obj()
         else:
             raise Exception("Either a distinguished name or a COM object must be provided to create an ADObject")
 
@@ -105,14 +121,22 @@ class ADObject(ADBase):
         sid = self.objectSid
         return pyadutils.convert_sid(sid) if sid else None
 
-    dn = property(fget=lambda self: self.__distinguished_name, doc="Distinguished Name (DN) of the object")
-    prefixed_cn = property(fget=__get_prefixed_cn, doc="Prefixed CN (such as 'cn=mycomputer' or 'ou=mycontainer' of the object")
-    guid = property(fget=lambda self: self.__object_guid, doc="Object GUID of the object")
-    adsPath = property(fget=lambda self: self.__ads_path, doc="ADsPath of Active Directory object (such as 'LDAP://cn=me,...,dc=com'")
-    type = property(fget=lambda self: self._type, doc="pyAD object type (user, computer, group, organizationalUnit, domain).")
-    parent_container_path = property(fget=lambda self: self.dn.split(',',1)[1], doc="Returns the DN of the object's parent container.")
-    guid_str = property(fget=lambda self: str(self.guid)[1:-1], doc="Object GUID of the object")
-    sid = property(fget=__get_object_sid, doc='Get the SID of the Active Directory object')
+    dn = property(fget=lambda self: self.__distinguished_name,
+                    doc="Distinguished Name (DN) of the object")
+    prefixed_cn = property(fget=__get_prefixed_cn,
+                    doc="Prefixed CN (such as 'cn=mycomputer' or 'ou=mycontainer' of the object")
+    guid = property(fget=lambda self: self.__object_guid,
+                    doc="Object GUID of the object")
+    adsPath = property(fget=lambda self: self.__ads_path,
+                    doc="ADsPath of Active Directory object (such as 'LDAP://cn=me,...,dc=com'")
+    type = property(fget=lambda self: self._type,
+                    doc="pyAD object type (user, computer, group, organizationalUnit, domain).")
+    parent_container_path = property(fget=lambda self: self.dn.split(',',1)[1],
+                    doc="Returns the DN of the object's parent container.")
+    guid_str = property(fget=lambda self: str(self.guid)[1:-1],
+                    doc="Object GUID of the object")
+    sid = property(fget=__get_object_sid,
+                    doc='Get the SID of the Active Directory object')
 
     def __hash__(self):
         # guid is always unique so that we can depend on that for providing a unique hash
@@ -124,8 +148,10 @@ class ADObject(ADBase):
     __repr__ = __str__
 
     def __cmp__(self, other):
-        # it doesn't make sense why you'd ever have to decide if one GUID was larger than the other,
-        # but it's important to be able to know if two pyAD objects represent the same AD object.
+        # it doesn't make sense why you'd ever have to decide
+        # if one GUID was larger than the other,
+        # but it's important to be able to know if two
+        # pyAD objects represent the same AD object.
         if (self.guid == other.guid):
             return 0
         elif (self.guid < other.guid):
@@ -144,12 +170,48 @@ class ADObject(ADBase):
     def _flush(self):
         "Commits any changes to the AD object."
         return self._ldap_adsi_obj.SetInfo()
-
+        
+    def __set_gc_adsi_obj(self):
+        if self.default_ldap_authentication_flag > 0:
+            self._gc_adsi_obj = self.adsi_provider.GetObject('',
+                    pyadutils.generate_ads_path(
+                            self.dn,
+                            'GC',
+                            self.default_gc_server,
+                            self.default_gc_port
+                    )
+                    _ds = _ds = self.adsi_provider.getObject('', self.default_ldap_protocol+":").
+                    self._gc_adsi_obj = _ds.OpenDSObject(self.__ads_path,
+                                    self.default_ldap_usn,
+                                    self.default_ldap_pwd,
+                                    self.default_ldap_authentication_flag
+                    )
+            )
+        else:
+            self._gc_adsi_obj = self.adsi_provider.GetObject('',
+                    pyadutils.generate_ads_path(self.dn, 'GC', 
+                            options.get('server'), options.get('port')
+                    )
+            )
     def _init_global_catalog_object(self, options={}):
         """Initializes the global catalog ADSI com object to be
         used when querying the global catalog instead of the domain directly."""
         if not self._gc_adsi_obj:
-            self._gc_adsi_obj = self.adsi_provider.GetObject('',pyadutils.generate_ads_path(self.dn, 'GC', options.get('server'), options.get('port')))
+            if 'gc_server' in options:
+                self.default_gc_server = options['gc_server']
+            if 'server' in options:
+                self.default_gc_server = options['server']
+            if 'gc_port' in options:
+                self.default_gc_port = options['gc_port']
+            if 'port' in options:
+                self.default_gc_port = options['port']
+            if 'authentication_flag' in options:
+                self.default_ldap_authentication_flag = options['authentication_flag']
+            if 'username' in options:
+                self.default_ldap_usn=options['username']
+            if 'password' in options:
+                self.default_ldap_pwd=options['password']
+            self.__set_gc_adsi_obj()
 
     def _init_schema_object(self):
         if not self._schema_adsi_obj:
@@ -330,7 +392,8 @@ class ADObject(ADBase):
         time.sleep(.5)
         self.__ads_path = pyadutils.generate_ads_path(new_dn, self.default_ldap_protocol,
                 self.default_ldap_server, self.default_ldap_port)
-        self._ldap_adsi_obj = self.adsi_provider.getObject('', self.__ads_path)
+        self.__set_adsi_obj()
+        self.__set_gc_adsi_obj()
         self.__distinguished_name = self.get_attribute('distinguishedName', False)
 
     def rename(self, new_name, set_sAMAccountName=True):
@@ -353,7 +416,8 @@ class ADObject(ADBase):
         time.sleep(.5)
         self.__ads_path = pyadutils.generate_ads_path(new_dn, self.default_ldap_protocol,
                 self.default_ldap_server, self.default_ldap_port)
-        self._ldap_adsi_obj = self.adsi_provider.getObject('', self.__ads_path)
+        self.__set_adsi_obj()
+        self.__set_gc_adsi_obj()
         self.__distinguishedName = self.get_attribute('distinguishedName', False)
 
     def add_to_group(self, group):
