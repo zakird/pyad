@@ -27,16 +27,18 @@ class ADQuery(ADBase):
     
     def __init__(self, encrypt=True, options={}):
         self.__adodb_conn = win32com.client.Dispatch("ADODB.Connection")
-        self.__adodb_conn.Open("Provider=ADSDSOObject")
+        self.__adodb_conn.Open("Provider=ADSDSOObject;Encrypt Password=True")
         if encrypt:
-            self.__adodb_conn.Properties("ADSI Flag") = ADS_USE_ENCRYPTION
+            print dir(self.__adodb_conn)
+			
+            #self.__adodb_conn.Properties("ADSI Flag") = ADS_USE_ENCRYPTION
         if self.default_ldap_usn:
-            self.__adodb_conn.Properties("Encrypt Password") = True
-            self.__adodb_conn.Properties("User ID") = self.default_ldap_usn
-            self.__adodb_conn.Properties("Password") = self.default_ldap_pwd
+            self.__adodb_conn.Properties("Encrypt Password").value = True
+            self.__adodb_conn.Properties("User ID").value = self.default_ldap_usn
+            self.__adodb_conn.Properties("Password").value = self.default_ldap_pwd
             adsi_flag = ADQuery.ADS_SECURE_AUTHENTICATION | \
                             ADQuery.ADS_USE_ENCRYPTION
-            self.__adodb_conn.Properties("ADSI Flag") = adsi_flag
+            self.__adodb_conn.Properties("ADSI Flag").value = adsi_flag
         self.reset()
     
     def reset(self):
@@ -56,15 +58,14 @@ class ADQuery(ADBase):
                         self.default_ldap_server, self.default_ldap_port))
         if where_clause:
             query = ' '.join((query, 'WHERE', where_clause))
-            
-        command = CreateObject("ADODB.Command")
-        assert(command)
+        
+        command = win32com.client.Dispatch("ADODB.Command")
         command.ActiveConnection = self.__adodb_conn
-        command.Properties("Page Size") = page_size
-        command.Properties("Searchscope") = ADQuery.ADS_SCOPE_SUBTREE
+        command.Properties("Page Size").value = page_size
+        command.Properties("Searchscope").value = ADQuery.ADS_SCOPE_SUBTREE
         
         command.CommandText = query
-        self.__rs = self.__adodb_conn.Execute()
+        self.__rs, self.__rc = command.Execute()
         self.__queried = True
 
     def get_row_count(self):

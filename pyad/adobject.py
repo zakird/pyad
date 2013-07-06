@@ -15,26 +15,26 @@ class ADObject(ADBase):
     
     def __set_adsi_obj(self):
         try:
-             if self.default_ldap_authentication_flag > 0:
-                 _ds = self.adsi_provider.getObject('', self.default_ldap_protocol+":").
-                 self._ldap_adsi_obj = _ds.OpenDSObject(self.__ads_path,
-                                 self.default_ldap_usn,
-                                 self.default_ldap_pwd,
-                                 self.default_ldap_authentication_flag
-                 )
-             else:
-                 self._ldap_adsi_obj = self.adsi_provider.getObject('', self.__ads_path)
-         except pywintypes.com_error, excpt:
-             additional_info = {
-                 'distinguished_name':distinguished_name,
-                 'protocol':self.default_ldap_protocol,
-                 'server':self.default_ldap_server,
-                 'port':self.default_ldap_port,
-                 'username':self.default_ldap_usn,
-                 'password':self.default_ldap_pwd,
-                 'authentication_flag':self.default_ldap_authentication_flag
-             }
-             pyadutils.pass_up_com_exception(excpt, additional_info)
+            if self.default_ldap_authentication_flag > 0:
+                _ds = self.adsi_provider.getObject('', self.default_ldap_protocol+":")
+                self._ldap_adsi_obj = _ds.OpenDSObject(self.__ads_path,
+                                self.default_ldap_usn,
+                                self.default_ldap_pwd,
+                                self.default_ldap_authentication_flag
+                )
+            else:
+                self._ldap_adsi_obj = self.adsi_provider.getObject('', self.__ads_path)
+        except pywintypes.com_error, excpt:
+            additional_info = {
+                'distinguished_name':distinguished_name,
+                'protocol':self.default_ldap_protocol,
+                'server':self.default_ldap_server,
+                'port':self.default_ldap_port,
+                'username':self.default_ldap_usn,
+                'password':self.default_ldap_pwd,
+                'authentication_flag':self.default_ldap_authentication_flag
+            }
+            pyadutils.pass_up_com_exception(excpt, additional_info)
     
     def __init__(self, distinguished_name=None, adsi_ldap_com_object=None, options={}):
         if adsi_ldap_com_object:
@@ -172,20 +172,20 @@ class ADObject(ADBase):
         return self._ldap_adsi_obj.SetInfo()
         
     def __set_gc_adsi_obj(self):
+        if self._gc_adsi_obj:
+            return
         if self.default_ldap_authentication_flag > 0:
-            self._gc_adsi_obj = self.adsi_provider.GetObject('',
-                    pyadutils.generate_ads_path(
-                            self.dn,
-                            'GC',
-                            self.default_gc_server,
-                            self.default_gc_port
-                    )
-                    _ds = _ds = self.adsi_provider.getObject('', self.default_ldap_protocol+":").
-                    self._gc_adsi_obj = _ds.OpenDSObject(self.__ads_path,
-                                    self.default_ldap_usn,
-                                    self.default_ldap_pwd,
-                                    self.default_ldap_authentication_flag
-                    )
+            _ds = self.adsi_provider.getObject('', self.default_ldap_protocol+":")
+            path = pyadutils.generate_ads_path(
+                        self.dn,
+                        'GC',
+                        self.default_gc_server,
+                        self.default_gc_port
+            )
+            self._ldap_adsi_obj = _ds.OpenDSObject(path,
+                            self.default_ldap_usn,
+                            self.default_ldap_pwd,
+                            self.default_ldap_authentication_flag
             )
         else:
             self._gc_adsi_obj = self.adsi_provider.GetObject('',
@@ -193,6 +193,7 @@ class ADObject(ADBase):
                             options.get('server'), options.get('port')
                     )
             )
+    
     def _init_global_catalog_object(self, options={}):
         """Initializes the global catalog ADSI com object to be
         used when querying the global catalog instead of the domain directly."""
