@@ -2,7 +2,13 @@ class comException(Exception):
     def __init__(self, error_info, additional_info={}):
         self.error_info = error_info
         self.additional_info = additional_info   
-
+    
+    def __str__(self):
+        print "Error Constant: %s" % self.error_info['error_constant']
+        print "Error Code: %s" % str(self.error_info['error_code'])
+        #print "Error Message: %s" % self.error_info['error_message']
+        #print "type is ", self.error_info['error_message'].__class__
+        #return "%s (%s): %s" % (str(self.error_info['error_constant']), str(self.error_info['error_code']), str(self.error_info['error_message']))
 
 class genericADSIException(comException):
     def __init__(self, error_info, additional_info={}):
@@ -28,6 +34,7 @@ class invalidOwnerException(Exception):
 class noObjectFoundException(Exception): 
     def __str__(self):
         return "The requested object does not exist."
+
 
 class InvalidObjectException(noObjectFoundException, win32Exception):
     def __init__(self, error_info, additional_info):

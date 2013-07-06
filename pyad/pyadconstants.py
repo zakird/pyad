@@ -52,7 +52,8 @@ PYAD_CATEGORY_TYPE_OVERRIDE_MAPPPINGS = {
 
 WIN32_ERRORS = {
     0x80072030:InvalidObjectException,
-    0x80072020:InvalidObjectException}
+    0x80072020:InvalidObjectException
+}
 
 # http://msdn.microsoft.com/en-us/library/aa705940(VS.85).aspx
 GENERIC_ADSI_ERRORS = {

@@ -13,28 +13,64 @@ class ADObject(ADBase):
     _optional_attributes = None
     _py_ad_object_mappings = {}
     
-    def __set_adsi_obj(self):
-        try:
+    def __set_adsi_obj(self, distinguished_name):
+        """Internal method that creates the connection to the backend ADSI object."""
+    
+        if self.default_ldap_usn and self.default_ldap_pwd:
+            # from http://msdn.microsoft.com/en-us/library/windows/desktop/aa706065(v=vs.85).aspx
+            # With the LDAP provider for Active Directory, you may pass in
+            # lpszUserName as one of the following strings:
+            # (1) The name of a user account, such as "jeffsmith". To use a user name 
+            # by itself, you must set only the ADS_SECURE_AUTHENTICATION flag 
+            # in the lnReserved parameter.
+            # (2) The user path from a previous version of Windows NT, such 
+            # as "Fabrikam\jeffsmith".
+            # (3) Distinguished Name, such as "CN=Jeff Smith, OU=Sales,
+            # DC=Fabrikam,DC=Com". To use a DN, the lnReserved parameter
+            # must be zero or it must include the ADS_USE_SSL flag
+            # (4) User Principal Name (UPN), such as "jeffsmith@Fabrikam.com".
+            # To use a UPN, you must assign the appropriate UPN value for the
+            # userPrincipalName attribute of the target user object.
+            
+            # In order to be consistent (and because troubleshooting this
+            # is horrid), we're just going to force user name to be of form
+            # (1) or (4) and document it. Offhand, I'm not seeing any
+            # use cases where (3) would allow something not possible in
+            # the combinations of options (1), or (4).
+            _ds = self.adsi_provider.getObject('', "LDAP:")
             if self.default_ldap_authentication_flag > 0:
-                _ds = self.adsi_provider.getObject('', self.default_ldap_protocol+":")
-                self._ldap_adsi_obj = _ds.OpenDSObject(self.__ads_path,
-                                self.default_ldap_usn,
-                                self.default_ldap_pwd,
-                                self.default_ldap_authentication_flag
-                )
+                flag = self.default_ldap_authentication_flag
             else:
-                self._ldap_adsi_obj = self.adsi_provider.getObject('', self.__ads_path)
-        except pywintypes.com_error, excpt:
-            additional_info = {
-                'distinguished_name':distinguished_name,
-                'protocol':self.default_ldap_protocol,
-                'server':self.default_ldap_server,
-                'port':self.default_ldap_port,
-                'username':self.default_ldap_usn,
-                'password':self.default_ldap_pwd,
-                'authentication_flag':self.default_ldap_authentication_flag
-            }
-            pyadutils.pass_up_com_exception(excpt, additional_info)
+                # I'm choosing to force encryption of the login credentials.
+                # This does not require SSL to be configured, so I believe this
+                # should work for everyone. If not, we can change later. 
+                flag = ADS_AUTHENTICATION_TYPE['ADS_SECURE_AUTHENTICATION']
+                if self.default_ssl:
+                    flag = flag | ADS_AUTHENTICATION_TYPE['ADS_USE_ENCRYPTION']
+            print "flag is ", flag
+            self._ldap_adsi_obj = _ds.OpenDSObject(
+                    self.__ads_path,
+                    self.default_ldap_usn,
+                    self.default_ldap_pwd,
+                    1)
+            
+        elif self.default_ssl:
+            # from: http://msdn.microsoft.com/en-us/library/windows/desktop/aa772247(v=vs.85).aspx
+            # If ADS_USE_SSL is not combined with the ADS_SECURE_AUTHENTICATION
+            # flag and the supplied credentials are NULL, the bind will be
+            # performed anonymously. If ADS_USE_SSL is combined with the 
+            # ADS_SECURE_AUTHENTICATION flag and the supplied credentials 
+            # are NULL, then the credentials of the calling thread are used.
+            _ds = self.adsi_provider.getObject('', "LDAP:")
+            self._ldap_adsi_obj = _ds.OpenDSObject(
+                            self.__ads_path,
+                            '', # username
+                            '', # password
+                            ADS_AUTHENTICATION_TYPE['ADS_USE_ENCRYPTION'] \
+                                    | ADS_AUTHENTICATION_TYPE['ADS_SECURE_AUTHENTICATION']
+            )
+        else:
+            self._ldap_adsi_obj = self.adsi_provider.getObject('', self.__ads_path)
     
     def __init__(self, distinguished_name=None, adsi_ldap_com_object=None, options={}):
         if adsi_ldap_com_object:
@@ -46,12 +82,12 @@ class ADObject(ADBase):
                             self.default_ldap_server,
                             self.default_ldap_port
             )
-            self.__set_adsi_obj()
+            self.__set_adsi_obj(distinguished_name)
         else:
             raise Exception("Either a distinguished name or a COM object must be provided to create an ADObject")
 
         # by pulling the DN from object instead of what is passed in,
-        # we gaurantee correct capitalization
+        # we guarantee correct capitalization
         self.__distinguished_name = self.get_attribute('distinguishedName', False)
         self.__object_guid = self.get_attribute('objectGUID', False)
         if self.__object_guid is not None:
