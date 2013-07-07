@@ -6,7 +6,7 @@
 Python Active Directory Tools's Documentation
 ====================================================
 
-pyad is a python library designed to provide a simple, object oriented interface to Active Directory through ADSI on the Windows platform. pyad requires pywin32, available at http://sourceforge.net/projects/pywin32.
+pyad is a python library designed to provide a simple, object oriented interface to Active Directory through ADSI on the Windows platform. The code for this project is maintained at https://github.com/zakird/pyad and can be downloaded at https://pypi.python.org/pypi/pyad.
 
 Contents:
 
@@ -25,6 +25,10 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
+Requirements
+============
+
+pyad requires pywin32, which is available at http://sourceforge.net/projects/pywin32. 
 
 License 
 =======
