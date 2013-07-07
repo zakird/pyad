@@ -1,107 +1,134 @@
 Introduction
-------------
+============
 
-pyad is a python library designed to provide a simple, object oriented interface to Active Directory through ADSI on the Windows platform. pyad requires pywin32, available at http://sourceforge.net/projects/pywin32.
-
-pyad is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-A copy of the GNU General Public License is available at <http://www.gnu.org/licenses/>.
+pyad is a python library designed to provide a simple, Pythonic interface to Active Directory through ADSI on the Windows platform. Complete documentation can be found at https://zakird.com/pyad.
 
 Basics
-------
+======
 
-Active Directory objects are represented by standard python objects. There are classes for all major types of Active Directory objects: ADComputer, ADContainer, ADDomain, ADGroup, ADUser, all of which inherit from ADObject. It is possible to connect to objects via CN, DN, and GUID. The type will automatically be selected at runtime. Example::
+Pyad is designed to expose the ADSI interface to Microsoft Active Directory in a straight-forward Pythonic manner. The library is designed to run on Windows. This page describes the basics of how to use the library. It does not, however, comprehensively describe the functionality of the library, which is more aptly documented in the next section.
+
+Requirements
+------------
+pyad requires pywin32, available at http://sourceforge.net/projects/pywin32.
+
+Connecting to Active Directory
+------------------------------
+
+By default, pyad will connect to the Active Directory domain to which the machine is joined (rootDSE)::
+
+    from pyad import aduser
+    user = aduser.ADUser.from_cn("myuser")
+
+However, it is possible to connect to a specific domain controller or to use alternate credentials, by calling pyad.set_defaults() or by passing in connection information in the options dictionary for each object you connect to. Authentication is performed over a secured connection, pyad will not pass credentials over clear text. The following options can be set in the `set_defaults` call: `ldap_server`, `gc_server`, `ldap_port`, `gc_port`, `username`, `password`, and `ssl` (True/False). For example, the following code will set the default connection parameters for all objects accessed through pyad::
+
+    from pyad import *
+    pyad.set_defaults(ldap_server="dc1.domain.com", username="service_account", password="mypassword")
+    user = pyad.aduser.ADUser.from_cn("myuser")
+    
+It is also possible to pass in options when connecting to a specific object. This will not set the library defaults, but these settings will be used from any objects you derive from it (e.g. if you request group membership of a user) Example::
+   
+   from pyad import aduser
+   user = aduser.ADUser.from_cn("myuser", options=dict(ldap_server="dc1.domain.com"))
+   
+Basic Object Manipulation
+-------------------------
+
+There are first order Python classes for different types of objects in Active Directory. For example, ADUser represents user objects and ADGroup represents groups. All objects subclass ADObject. Most methods are defined in ADObject, but subclasses generally provide additional helper methods (e.g. ADUser has `set_password` and ADGroup has `add_member`).
+
+It is possible to connect to an object by distinguished name, CN, UPN, and GUID if you already know the type of object. Examples::
+
+    from pyad import aduser
+    user1 = aduser.ADUser.from_dn("cn=myuser, ou=staff, dc=domain, dc=com")
+    user2 = aduser.ADUser.from_cn("myuser")
+    user3 = aduser.ADUser.from_guid("XXX-XXX-XXX")
+    
+It is also possible to use the pyad factory with an arbitrary Active Directory object and to receive an appropriately classed Python object::
 
     from pyad import pyad
-    u = pyad.from_cn("user1")
-    c = pyad.from_dn("cn=WS1,ou=Workstations,dc=domain,dc=com")
-    g = pyad.from_cn("group1")
+    user = pyad.from_cn("user1")
+    computer = pyad.from_dn("cn=WS1,ou=Workstations,dc=domain,dc=com")
+    group = pyad.from_guid("XXX-XXX-XXX")
+
+Unlike the ADSI interface, pyad objects are intended to interact with one another. Instead of adding the DN of a user to the members attribute of a group to add the user, you instead add the user object to the group. For instance::
     
-It is possible to read attribute values in two ways.::
-
-    print u.displayName
-    print u.get_attribute("displayName")
+    user1 = ADUser.from_cn("myuser1")
+    user2 = ADUser.from_cn("myuser2")
+    group = ADGroup.from_dn("staff")
     
-Attributes can be set by calling clear_attribute, update_attribute, update_attributes, append_to_attribute, and remove_from_attribute. Example::
+    group.add_members([user1, user2])
+    
+    for user in group.get_members():
+        print user1.description
+    
+However, it is still possible to directly manipulate any attribute outside of the helper methods that pyad provides::
 
-    u.update_attribute("displayName", "new value")
+    user1 = ADUser.from_cn("myuser1")
+    user.set_attribute("description", "new description")
+    user.append_to_attribute("member", "cn=myuser1, ou=staff, dc=domain, dc=com")
+    
+    
+More details on how to manipulate the objects you find to is found in the next section. 
 
-There are other helper methods available for managing attributes. We provide further examples below for common actions for each object type.
 
-Group Examples
---------------
 
-1. Finding group members::
+Creating, Moving, and Deleting Objects
+----------------------------------
 
-	for object in g.get_members(recursive=False):
-		print object
+There are two methodologies for creating and deleting objects. In both cases, you must first bind to the parent container. When creating a new object, several attributes are required, but other additional attributes can be specified with the `optional_attributes` parameter. Example 1::
 
-2. Adding an object to a group::
+    ou = ADContainer.from_dn("ou=workstations, dc=domain, dc=com")
+    
+    # create a new group without any optional attributes
+    new_computer = ADComputer.create("WS-489", ou)
+    
+    # create a new group with additional attributes
+    new_group = ADGroup.create("IT-STAFF", security_enabled=True, scope='UNIVERSAL',
+                    optional_attributes = {"description":"all IT staff in our company"})
 
-	g.add_members(u)
+It is also possible to create new objects from the parent container::
 
-or::
+    ou = ADContainer.from_dn("ou=workstations, dc=domain, dc=com")
+    computer = ou.create_computer("WS-490")
+    
+Once objects are created, they can be moved::
 
-	u.add_to_group(g)
+    computer = ADComputer.from_cn("WS-500")
+    computer.move(ADContainer.from_dn("ou=workstations, ou=HR, dc=company, dc=com"))
+    
+or renamed::
 
-3. Set group scope::
+    computer = ADComputer.from_cn("WS-500")
+    computer.rename("WS-501")
+    
+Objects can be removed by calling delete()::
 
-	g.set_group_scope("UNIVERSAL")
+    ADComputer.from_cn("WS-500").delete()
+    
 
-User Examples
--------------
+Searching Active Directory
+--------------------------
 
-1. Set password::
+As shown above, objects can be directly connected to via CN, DN, GUID, or UPN. However, objects can also be searched for through the ADQuery interface (and in the background, this is how objects are actually found when you connect by CN). It is important to note that the ADQuery interface will not provide you with pyad objects, but instead with only the attributes for which you queried, for performance reasons. Example::
 
-	u.set_password("new_plaintext_password")
+    import pyad.adquery
+    q = pyad.adquery.ADQuery()
+    
+    q.execute_query(
+        attributes = ["distinguishedName", "description"],
+        where_clause = "objectClass = '*'",
+        base_dn = "OU=users, DC=domain, DC=com"
+    )
+    
+    for row in q.get_results():
+        print row["distinguishedName"]
 
-2. Force password change on login::
+License
+=======
 
-	u.force_pwd_change_on_login()
+pyad is licensed under the Apache License, Version 2.0 (the “License”). You may obtain a copy of the License at
 
-Container Examples
-------------------
+    http://www.apache.org/licenses/LICENSE-2.0
 
-1. Find all objects in an OU::
-
-	ou = pyad.adcontainer.ADContainer.from_dn("OU=Workstations,DC=company,DC=com")
-	for obj in ou.get_children():
-		print obj
-		
-2. Recursively find all computers below a certain OU::
-
-	for c in ou.get_children(recursive=True, filter=[pyad.adcomputer.ADComputer]):
-		print c
-		
-Creating Objects
-----------------
-
-It is possible to create objects through pyad. Example::
-
-	ou = pyad.adcontainer.ADContainer.from_dn("OU=Workstations,DC=company,DC=com")
-	c = pyad.adcomputer.ADComputer.create(
-		name = 'myworkstation2',
-		container_object = ou,
-		enable = True,
-		optional_attributes = dict(
-			description = "newly created computer"
-		)
-	)
-	
-Querying
---------
-
-It is also possible to make queries to find objects. Example::
-
-	q = pyad.adquery.ADQuery()
-	q.execute_query(
-		attributes = ['distinguishedname', 'description'],
-		where_clause = "cn like 'ws%'",
-		base_dn = "dc=company,dc=com"
-	)
-	for r in q.get_results():
-		print r['distinguishedname']
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 

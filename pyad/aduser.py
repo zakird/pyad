@@ -6,6 +6,7 @@ class ADUser(ADObject):
     @classmethod
     def create(cls, name, container_object, password=None, upn_suffix=None,
                     enable=True, optional_attributes={}):
+        """Creates and returns a new active directory user"""
         return container_object.create_user(
             name=name,
             password=password,
@@ -15,6 +16,7 @@ class ADUser(ADObject):
         )
 
     def set_password(self, password):
+        """Sets the users password"""
         try:
             self._ldap_adsi_obj.SetPassword(password)
             self._flush()
@@ -22,6 +24,7 @@ class ADUser(ADObject):
             pyadutils.pass_up_com_exception(excpt)
 
     def force_pwd_change_on_login(self): 
+        """Forces the user to change their password the next time they login"""
         self.update_attribute('PwdLastSet',0)
     
     def grant_password_lease(self): 
@@ -32,6 +35,7 @@ class ADUser(ADObject):
         return self._get_password_last_set()
         
     def set_expiration(self, dt):
+        """Sets the expiration date of the password to the given value"""
         self._ldap_adsi_obj.AccountExpirationDate = dt
         self._flush()
             

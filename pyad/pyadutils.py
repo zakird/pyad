@@ -1,6 +1,7 @@
 from adbase import *
 
 def convert_error_code(error_code):
+    """Convert error code from the format returned by pywin32 to the format that Microsoft documents everything in."""
     return error_code % 2 ** 32
 
 def interpret_com_exception(excp, additional_info={}): #expects the actualy pywintypes.com_error exception that's thrown... 

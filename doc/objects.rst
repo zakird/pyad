@@ -1,7 +1,7 @@
 Manipulating Active Directory Objects
-====
-That has a paragraph about a main subject and is set when the '='
-is at least the same length of the title itself.
+=====================================
+
+This page contains detailed information about how to manipulate various types of Active Directory objects. Keep in mind that all objects subclass ADObject.
 
 ADObject
 ---------
@@ -36,6 +36,8 @@ ADContainer
    
 ADDomain
 --------
+
+NOTE: ADDomain subclasses ADContainer.
 
 .. autoclass:: pyad.addomain.ADDomain
    :members:

@@ -17,6 +17,7 @@ class ADContainer(ADObject):
                 yield q
     
     def get_children(self, recursive=False, filter_=None): 
+        "Iterate over the children objects in the container."
         return list(self.get_children_iter(recursive=recursive, filter_=filter_))
     
     def __create_object(self, type_, name):
@@ -25,6 +26,7 @@ class ADContainer(ADObject):
         return self._ldap_adsi_obj.Create(type_, prefixed_name)
     
     def create_user(self, name, password=None, upn_suffix=None, enable=True,optional_attributes={}):
+        """Create a new user object in the container"""
         try:
             if not upn_suffix:
                 upn_suffix = self.get_domain().get_default_upn()
@@ -44,6 +46,7 @@ class ADContainer(ADObject):
             pyadutils.pass_up_com_exception(e)
 
     def create_group(self, name, security_enabled=True, scope='GLOBAL', optional_attributes={}):
+        """Create a new group object in the container"""
         try:
             obj = self.__create_object('group', name)
             obj.Put('sAMAccountName',name)
@@ -59,6 +62,7 @@ class ADContainer(ADObject):
             pyadutils.pass_up_com_exception(e)
 
     def create_container(self, name, optional_attributes={}):
+        """Create a new organizational unit in the container"""
         try:
             obj = self.__create_object('organizationalUnit', name)
             obj.SetInfo()
@@ -69,6 +73,7 @@ class ADContainer(ADObject):
             pyadutils.pass_up_com_exception(e)
 
     def create_computer(self, name, enable=True,optional_attributes={}):
+        """Create a new computer object in the container"""
         try:
             obj = self.__create_object('computer', name)
             obj.Put('sAMAccountName', name)
@@ -82,6 +87,7 @@ class ADContainer(ADObject):
             pyadutils.pass_up_com_exception(e)
 
     def remove_child(self, child):
+        """Rremoves the child object from the domain"""
         self._ldap_adsi_obj.Delete(child.type, child.prefixed_cn)
         
 ADObject._py_ad_object_mappings['organizationalUnit'] = ADContainer

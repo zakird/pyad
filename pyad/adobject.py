@@ -104,7 +104,7 @@ class ADObject(ADBase):
             else:
                 self._type = object_category_cn.lower()
         else:
-            # Sometimes you don't have acccess to objectCategory attribute,
+            # Sometimes you don't have access to objectCategory attribute,
             # try, with objectClass attribute
             objClass = self.get_attribute('objectClass',True)
             if 'domain' in objClass:
@@ -392,6 +392,7 @@ class ADObject(ADBase):
             self.update_attribute('userAccountControl',nv)
 
     def disable(self):
+        """Disables the user or computer"""
         try:
             if self._ldap_adsi_obj.AccountDisabled == False:
                 self._ldap_adsi_obj.AccountDisabled = True
@@ -400,6 +401,7 @@ class ADObject(ADBase):
             pyadutils.pass_up_com_exception(excpt)
 
     def enable(self):
+        """Enables the user or computer"""
         try:
             if self._ldap_adsi_obj.AccountDisabled == True:
                 self._ldap_adsi_obj.AccountDisabled = False
@@ -478,6 +480,7 @@ class ADObject(ADBase):
         return self.set_manager(None)
 
     def dump_to_xml(self, whitelist_attributes=[], blacklist_attributes=[]):
+        """Dumps object and all human-readable attributes to an xml document which is returned as a string."""
         if len(whitelist_attributes) == 0:
             whitelist_attributes = self.get_allowed_attributes()
         attributes = list(set(whitelist_attributes) - set(blacklist_attributes))
@@ -522,7 +525,6 @@ class ADObject(ADBase):
         return doc.toxml(encoding="UTF-8")
 
     def adjust_pyad_type(self):
-        """Adjusts pyAD class to match object pyad type."""
         if self.type in self._py_ad_object_mappings.keys():
             self.__class__ = self._py_ad_object_mappings[self.type]
         else:
@@ -533,9 +535,10 @@ class ADObject(ADBase):
                 options = self._make_options())
         q.adjust_pyad_type()
         return q
-    parent_container = property(__get_parent_container)
+    parent_container = property(__get_parent_container, doc="Object representing the container in which this object lives")
 
     def delete(self):
+        """Deletes the object from the domain"""
         parent = self.parent_container
         if not parent:
             raise Exception("Object does not have a parent container. Cannot be deleted")

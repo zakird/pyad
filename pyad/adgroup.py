@@ -5,6 +5,7 @@ class ADGroup(ADObject):
 
     @classmethod
     def create(cls, name, container_object, security_enabled=True, scope='GLOBAL', optional_attributes={}):
+        """Creates and returns a new group"""
         return container_object.create_group(name=name,
             security_enabled=security_enabled,
             scope=scope,
@@ -52,7 +53,7 @@ class ADGroup(ADObject):
         return list((set(m))) # converting to set removes duplicates
 
     def sync_membership(self, new_population):
-        "Synchronizes membership of group so that it matches the list of entries in new_population"
+        """Synchronizes membership of group so that it matches the list of entries in new_population"""
         current_members = set(self.get_members())
         new_population = set(new_population)
         self.add_members(list(new_population - current_members))
@@ -112,9 +113,11 @@ class ADGroup(ADObject):
 ADObject._py_ad_object_mappings['group'] = ADGroup
 
 def __get_memberOfs(self, recursive=False, scope='all'):
+    """Get the groups that this object is a member of"""
     return self._get_memberOfs(recursive, scope, [])
 
 def __is_member_of(self, group, recursive=False):
+    """Check whether this object is a member of the given group"""
     return group in self.get_memberOfs(recursive=recursive)
 
 def ___p_get_memberOfs(self, recursive=False, scope='all', processed_groups=[]):
