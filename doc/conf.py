@@ -14,6 +14,7 @@
 import sys, os
 sys.path.append("..")
 from pyad import *
+from pyad.aduser import ADUser
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -215,7 +216,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'pythonactivedirectorytoolspyad', u'Python Active Directory Tools (pyad) Documentation',
+    ('index', 'pyad', u'Python Active Directory Tools (pyad) Documentation',
      [u'Zakir Durumeric'], 1)
 ]
 
@@ -229,8 +230,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'PythonActiveDirectoryToolspyad', u'Python Active Directory Tools (pyad) Documentation',
-   u'Zakir Durumeric', 'PythonActiveDirectoryToolspyad', 'One line description of project.',
+  ('index', 'pyad', u'Python Active Directory Tools (pyad) Documentation',
+   u'Zakir Durumeric', 'pyad', 'One line description of project.',
    'Miscellaneous'),
 ]
 

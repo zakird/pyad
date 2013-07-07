@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Active Directory Basics &mdash; Python Active Directory Tools 0.4.19 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.4.19',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Python Active Directory Tools 0.4.19 documentation" href="index.html" />
+    <link rel="next" title="Manipulating Active Directory Objects" href="objects.html" />
+    <link rel="prev" title="Python Active Directory Tools’s Documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="objects.html" title="Manipulating Active Directory Objects"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Python Active Directory Tools’s Documentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Python Active Directory Tools 0.4.19 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="active-directory-basics">
+<h1>Active Directory Basics<a class="headerlink" href="#active-directory-basics" title="Permalink to this headline">¶</a></h1>
+<p>Pyad is designed to expose the ADSI interface to Microsoft Active Directory in a straight-forward Pythonic manner. The library is designed to run on Windows. This page describes the basics of how to use the library. It does not, however, comprehensively describe the functionality of the library, which is more aptly documented in the next section.</p>
+<div class="section" id="connecting-to-active-directory">
+<h2>Connecting to Active Directory<a class="headerlink" href="#connecting-to-active-directory" title="Permalink to this headline">¶</a></h2>
+<p>By default, pyad will connect to the Active Directory domain to which the machine is joined (rootDSE):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyad</span> <span class="kn">import</span> <span class="n">aduser</span>
+<span class="n">user</span> <span class="o">=</span> <span class="n">aduser</span><span class="o">.</span><span class="n">ADUser</span><span class="o">.</span><span class="n">from_cn</span><span class="p">(</span><span class="s">&quot;myuser&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>However, it is possible to connect to a specific domain controller or to use alternate credentials, by calling pyad.set_defaults() or by passing in connection information in the options dictionary for each object you connect to. Authentication is performed over a secured connection, pyad will not pass credentials over clear text. The following options can be set in the <cite>set_defaults</cite> call: <cite>ldap_server</cite>, <cite>gc_server</cite>, <cite>ldap_port</cite>, <cite>gc_port</cite>, <cite>username</cite>, <cite>password</cite>, and <cite>ssl</cite> (True/False). For example, the following code will set the default connection parameters for all objects accessed through pyad:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyad</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">pyad</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">ldap_server</span><span class="o">=</span><span class="s">&quot;dc1.domain.com&quot;</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="s">&quot;service_account&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s">&quot;mypassword&quot;</span><span class="p">)</span>
+<span class="n">user</span> <span class="o">=</span> <span class="n">pyad</span><span class="o">.</span><span class="n">aduser</span><span class="o">.</span><span class="n">ADUser</span><span class="o">.</span><span class="n">from_cn</span><span class="p">(</span><span class="s">&quot;myuser&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It is also possible to pass in options when connecting to a specific object. This will not set the library defaults, but these settings will be used from any objects you derive from it (e.g. if you request group membership of a user) Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyad</span> <span class="kn">import</span> <span class="n">aduser</span>
+<span class="n">user</span> <span class="o">=</span> <span class="n">aduser</span><span class="o">.</span><span class="n">ADUser</span><span class="o">.</span><span class="n">from_cn</span><span class="p">(</span><span class="s">&quot;myuser&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ldap_server</span><span class="o">=</span><span class="s">&quot;dc1.domain.com&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="basic-object-manipulation">
+<h2>Basic Object Manipulation<a class="headerlink" href="#basic-object-manipulation" title="Permalink to this headline">¶</a></h2>
+<p>There are first order Python classes for different types of objects in Active Directory. For example, ADUser represents user objects and ADGroup represents groups. All objects subclass ADObject. Most methods are defined in ADObject, but subclasses generally provide additional helper methods (e.g. ADUser has <cite>set_password</cite> and ADGroup has <cite>add_member</cite>).</p>
+<p>It is possible to connect to an object by distinguished name, CN, UPN, and GUID if you already know the type of object. Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyad</span> <span class="kn">import</span> <span class="n">aduser</span>
+<span class="n">user1</span> <span class="o">=</span> <span class="n">aduser</span><span class="o">.</span><span class="n">ADUser</span><span class="o">.</span><span class="n">from_dn</span><span class="p">(</span><span class="s">&quot;cn=myuser, ou=staff, dc=domain, dc=com&quot;</span><span class="p">)</span>
+<span class="n">user2</span> <span class="o">=</span> <span class="n">aduser</span><span class="o">.</span><span class="n">ADUser</span><span class="o">.</span><span class="n">from_cn</span><span class="p">(</span><span class="s">&quot;myuser&quot;</span><span class="p">)</span>
+<span class="n">user3</span> <span class="o">=</span> <span class="n">aduser</span><span class="o">.</span><span class="n">ADUser</span><span class="o">.</span><span class="n">from_guid</span><span class="p">(</span><span class="s">&quot;XXX-XXX-XXX&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It is also possible to use the pyad factory with an arbitrary Active Directory object and to receive an appropriately classed Python object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pyad</span> <span class="kn">import</span> <span class="n">pyad</span>
+<span class="n">user</span> <span class="o">=</span> <span class="n">pyad</span><span class="o">.</span><span class="n">from_cn</span><span class="p">(</span><span class="s">&quot;user1&quot;</span><span class="p">)</span>
+<span class="n">computer</span> <span class="o">=</span> <span class="n">pyad</span><span class="o">.</span><span class="n">from_dn</span><span class="p">(</span><span class="s">&quot;cn=WS1,ou=Workstations,dc=domain,dc=com&quot;</span><span class="p">)</span>
+<span class="n">group</span> <span class="o">=</span> <span class="n">pyad</span><span class="o">.</span><span class="n">from_guid</span><span class="p">(</span><span class="s">&quot;XXX-XXX-XXX&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Unlike the ADSI interface, pyad objects are intended to interact with one another. Instead of adding the DN of a user to the members attribute of a group to add the user, you instead add the user object to the group. For instance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">user1</span> <span class="o">=</span> <span class="n">ADUser</span><span class="o">.</span><span class="n">from_cn</span><span class="p">(</span><span class="s">&quot;myuser1&quot;</span><span class="p">)</span>
+<span class="n">user2</span> <span class="o">=</span> <span class="n">ADUser</span><span class="o">.</span><span class="n">from_cn</span><span class="p">(</span><span class="s">&quot;myuser2&quot;</span><span class="p">)</span>
+<span class="n">group</span> <span class="o">=</span> <span class="n">ADGroup</span><span class="o">.</span><span class="n">from_dn</span><span class="p">(</span><span class="s">&quot;staff&quot;</span><span class="p">)</span>
+
+<span class="n">group</span><span class="o">.</span><span class="n">add_members</span><span class="p">([</span><span class="n">user1</span><span class="p">,</span> <span class="n">user2</span><span class="p">])</span>
+
+<span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">get_members</span><span class="p">():</span>
+    <span class="k">print</span> <span class="n">user1</span><span class="o">.</span><span class="n">description</span>
+</pre></div>
+</div>
+<p>However, it is still possible to directly manipulate any attribute outside of the helper methods that pyad provides:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">user1</span> <span class="o">=</span> <span class="n">ADUser</span><span class="o">.</span><span class="n">from_cn</span><span class="p">(</span><span class="s">&quot;myuser1&quot;</span><span class="p">)</span>
+<span class="n">user</span><span class="o">.</span><span class="n">set_attribute</span><span class="p">(</span><span class="s">&quot;description&quot;</span><span class="p">,</span> <span class="s">&quot;new description&quot;</span><span class="p">)</span>
+<span class="n">user</span><span class="o">.</span><span class="n">append_to_attribute</span><span class="p">(</span><span class="s">&quot;member&quot;</span><span class="p">,</span> <span class="s">&quot;cn=myuser1, ou=staff, dc=domain, dc=com&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>More details on how to manipulate the objects you find to is found in the next section.</p>
+</div>
+<div class="section" id="creating-moving-and-deleting-objects">
+<h2>Creating, Moving, and Deleting Objects<a class="headerlink" href="#creating-moving-and-deleting-objects" title="Permalink to this headline">¶</a></h2>
+<p>There are two methodologies for creating and deleting objects. In both cases, you must first bind to the parent container. When creating a new object, several attributes are required, but other additional attributes can be specified with the <cite>optional_attributes</cite> parameter. Example 1:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ou</span> <span class="o">=</span> <span class="n">ADContainer</span><span class="o">.</span><span class="n">from_dn</span><span class="p">(</span><span class="s">&quot;ou=workstations, dc=domain, dc=com&quot;</span><span class="p">)</span>
+
+<span class="c"># create a new group without any optional attributes</span>
+<span class="n">new_computer</span> <span class="o">=</span> <span class="n">ADComputer</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;WS-489&quot;</span><span class="p">,</span> <span class="n">ou</span><span class="p">)</span>
+
+<span class="c"># create a new group with additional attributes</span>
+<span class="n">new_group</span> <span class="o">=</span> <span class="n">ADGroup</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;IT-STAFF&quot;</span><span class="p">,</span> <span class="n">security_enabled</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s">&#39;UNIVERSAL&#39;</span><span class="p">,</span>
+                <span class="n">optional_attributes</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;description&quot;</span><span class="p">:</span><span class="s">&quot;all IT staff in our company&quot;</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>It is also possible to create new objects from the parent container:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ou</span> <span class="o">=</span> <span class="n">ADContainer</span><span class="o">.</span><span class="n">from_dn</span><span class="p">(</span><span class="s">&quot;ou=workstations, dc=domain, dc=com&quot;</span><span class="p">)</span>
+<span class="n">computer</span> <span class="o">=</span> <span class="n">ou</span><span class="o">.</span><span class="n">create_computer</span><span class="p">(</span><span class="s">&quot;WS-490&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once objects are created, they can be moved:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">computer</span> <span class="o">=</span> <span class="n">ADComputer</span><span class="o">.</span><span class="n">from_cn</span><span class="p">(</span><span class="s">&quot;WS-500&quot;</span><span class="p">)</span>
+<span class="n">computer</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">ADContainer</span><span class="o">.</span><span class="n">from_dn</span><span class="p">(</span><span class="s">&quot;ou=workstations, ou=HR, dc=company, dc=com&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>or renamed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">computer</span> <span class="o">=</span> <span class="n">ADComputer</span><span class="o">.</span><span class="n">from_cn</span><span class="p">(</span><span class="s">&quot;WS-500&quot;</span><span class="p">)</span>
+<span class="n">computer</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s">&quot;WS-501&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Objects can be removed by calling delete():</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ADComputer</span><span class="o">.</span><span class="n">from_cn</span><span class="p">(</span><span class="s">&quot;WS-500&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="searching-active-directory">
+<h2>Searching Active Directory<a class="headerlink" href="#searching-active-directory" title="Permalink to this headline">¶</a></h2>
+<p>As shown above, objects can be directly connected to via CN, DN, GUID, or UPN. However, objects can also be searched for through the ADQuery interface (and in the background, this is how objects are actually found when you connect by CN). It is important to note that the ADQuery interface will not provide you with pyad objects, but instead with only the attributes for which you queried, for performance reasons. Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pyad.adquery</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">pyad</span><span class="o">.</span><span class="n">adquery</span><span class="o">.</span><span class="n">ADQuery</span><span class="p">()</span>
+
+<span class="n">q</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span>
+    <span class="n">attributes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;distinguishedName&quot;</span><span class="p">,</span> <span class="s">&quot;description&quot;</span><span class="p">],</span>
+    <span class="n">where_clause</span> <span class="o">=</span> <span class="s">&quot;objectClass = &#39;*&#39;&quot;</span><span class="p">,</span>
+    <span class="n">base_dn</span> <span class="o">=</span> <span class="s">&quot;OU=users, DC=domain, DC=com&quot;</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">q</span><span class="o">.</span><span class="n">get_results</span><span class="p">():</span>
+    <span class="k">print</span> <span class="n">row</span><span class="p">[</span><span class="s">&quot;distinguishedName&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Active Directory Basics</a><ul>
+<li><a class="reference internal" href="#connecting-to-active-directory">Connecting to Active Directory</a></li>
+<li><a class="reference internal" href="#basic-object-manipulation">Basic Object Manipulation</a></li>
+<li><a class="reference internal" href="#creating-moving-and-deleting-objects">Creating, Moving, and Deleting Objects</a></li>
+<li><a class="reference internal" href="#searching-active-directory">Searching Active Directory</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Python Active Directory Tools&#8217;s Documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="objects.html"
+                        title="next chapter">Manipulating Active Directory Objects</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pyad.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="objects.html" title="Manipulating Active Directory Objects"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Python Active Directory Tools’s Documentation"
+             >previous</a> |</li>
+        <li><a href="index.html">Python Active Directory Tools 0.4.19 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Zakir Durumeric.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

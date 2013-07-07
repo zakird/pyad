@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyad.aduser &mdash; Python Active Directory Tools 0.4.19 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.4.19',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Python Active Directory Tools 0.4.19 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Python Active Directory Tools 0.4.19 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyad.aduser</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">adobject</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">adsearch</span> <span class="kn">import</span> <span class="n">_ad_query_obj</span>
+
+<div class="viewcode-block" id="ADUser"><a class="viewcode-back" href="../../objects.html#pyad.aduser.ADUser">[docs]</a><span class="k">class</span> <span class="nc">ADUser</span><span class="p">(</span><span class="n">ADObject</span><span class="p">):</span>
+    
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ADUser.create"><a class="viewcode-back" href="../../objects.html#pyad.aduser.ADUser.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">container_object</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">upn_suffix</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                    <span class="n">enable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">optional_attributes</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="k">return</span> <span class="n">container_object</span><span class="o">.</span><span class="n">create_user</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span>
+            <span class="n">upn_suffix</span><span class="o">=</span><span class="n">upn_suffix</span><span class="p">,</span>
+            <span class="n">enable</span><span class="o">=</span><span class="n">enable</span><span class="p">,</span>
+            <span class="n">optional_attributes</span><span class="o">=</span><span class="n">optional_attributes</span>
+        <span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADUser.set_password"><a class="viewcode-back" href="../../objects.html#pyad.aduser.ADUser.set_password">[docs]</a>    <span class="k">def</span> <span class="nf">set_password</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">SetPassword</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_flush</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">pywintypes</span><span class="o">.</span><span class="n">com_error</span><span class="p">,</span> <span class="n">excpt</span><span class="p">:</span> 
+            <span class="n">pyadutils</span><span class="o">.</span><span class="n">pass_up_com_exception</span><span class="p">(</span><span class="n">excpt</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADUser.force_pwd_change_on_login"><a class="viewcode-back" href="../../objects.html#pyad.aduser.ADUser.force_pwd_change_on_login">[docs]</a>    <span class="k">def</span> <span class="nf">force_pwd_change_on_login</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_attribute</span><span class="p">(</span><span class="s">&#39;PwdLastSet&#39;</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+    </div>
+    <span class="k">def</span> <span class="nf">grant_password_lease</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_attribute</span><span class="p">(</span><span class="s">&#39;PwdLastSet&#39;</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ADUser.get_password_last_set"><a class="viewcode-back" href="../../objects.html#pyad.aduser.ADUser.get_password_last_set">[docs]</a>    <span class="k">def</span> <span class="nf">get_password_last_set</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+        <span class="sd">&quot;&quot;&quot;Returns datetime object of when user last reset their password.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_password_last_set</span><span class="p">()</span>
+        </div>
+<div class="viewcode-block" id="ADUser.set_expiration"><a class="viewcode-back" href="../../objects.html#pyad.aduser.ADUser.set_expiration">[docs]</a>    <span class="k">def</span> <span class="nf">set_expiration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">AccountExpirationDate</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flush</span><span class="p">()</span>
+            </div></div>
+<span class="n">ADObject</span><span class="o">.</span><span class="n">_py_ad_object_mappings</span><span class="p">[</span><span class="s">&#39;user&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ADUser</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Python Active Directory Tools 0.4.19 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Zakir Durumeric.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

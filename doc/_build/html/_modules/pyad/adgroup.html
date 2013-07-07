@@ -1,0 +1,239 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyad.adgroup &mdash; Python Active Directory Tools 0.4.19 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.4.19',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Python Active Directory Tools 0.4.19 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Python Active Directory Tools 0.4.19 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyad.adgroup</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">adobject</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">pyadconstants</span>
+
+<div class="viewcode-block" id="ADGroup"><a class="viewcode-back" href="../../objects.html#pyad.adgroup.ADGroup">[docs]</a><span class="k">class</span> <span class="nc">ADGroup</span><span class="p">(</span><span class="n">ADObject</span><span class="p">):</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ADGroup.create"><a class="viewcode-back" href="../../objects.html#pyad.adgroup.ADGroup.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">container_object</span><span class="p">,</span> <span class="n">security_enabled</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s">&#39;GLOBAL&#39;</span><span class="p">,</span> <span class="n">optional_attributes</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="k">return</span> <span class="n">container_object</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">security_enabled</span><span class="o">=</span><span class="n">security_enabled</span><span class="p">,</span>
+            <span class="n">scope</span><span class="o">=</span><span class="n">scope</span><span class="p">,</span>
+            <span class="n">optional_attributes</span><span class="o">=</span><span class="n">optional_attributes</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADGroup.add_members"><a class="viewcode-back" href="../../objects.html#pyad.adgroup.ADGroup.add_members">[docs]</a>    <span class="k">def</span> <span class="nf">add_members</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">members</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Accepts a list of pyAD objects or a single pyAD object and adds as members to the group.&quot;&quot;&quot;</span>
+        <span class="n">members</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">member</span><span class="p">:</span> <span class="n">member</span><span class="o">.</span><span class="n">dn</span><span class="p">,</span> <span class="n">pyadutils</span><span class="o">.</span><span class="n">generate_list</span><span class="p">(</span><span class="n">members</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">append_to_attribute</span><span class="p">(</span><span class="s">&#39;member&#39;</span><span class="p">,</span> <span class="n">members</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADGroup.remove_members"><a class="viewcode-back" href="../../objects.html#pyad.adgroup.ADGroup.remove_members">[docs]</a>    <span class="k">def</span> <span class="nf">remove_members</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">members</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Accepts a list of pyAD objects or a single pyAD object and removes these as members from the group.&quot;&quot;&quot;</span>
+        <span class="n">members</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">member</span><span class="p">:</span> <span class="n">member</span><span class="o">.</span><span class="n">dn</span><span class="p">,</span> <span class="n">pyadutils</span><span class="o">.</span><span class="n">generate_list</span><span class="p">(</span><span class="n">members</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_from_attribute</span><span class="p">(</span><span class="s">&#39;member&#39;</span><span class="p">,</span> <span class="n">members</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADGroup.remove_all_members"><a class="viewcode-back" href="../../objects.html#pyad.adgroup.ADGroup.remove_all_members">[docs]</a>    <span class="k">def</span> <span class="nf">remove_all_members</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Removes all members of the group.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">remove_from_attribute</span><span class="p">(</span><span class="s">&#39;member&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;member&#39;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="ADGroup.get_members"><a class="viewcode-back" href="../../objects.html#pyad.adgroup.ADGroup.get_members">[docs]</a>    <span class="k">def</span> <span class="nf">get_members</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">ignoreGroups</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of group members.</span>
+<span class="sd">            recursive - True/False. Determines whether to recursively traverse through nested groups.</span>
+<span class="sd">            ignoreGroups - True/False. Determines whether or not to return an ADGroup objects in list or to ignore them.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_members</span><span class="p">(</span><span class="n">recursive</span><span class="p">,</span> <span class="n">ignoreGroups</span><span class="p">,</span> <span class="p">[])</span>
+</div>
+    <span class="k">def</span> <span class="nf">_get_members</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recursive</span><span class="p">,</span> <span class="n">ignoreGroups</span><span class="p">,</span> <span class="n">processedGroups</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of pyAD objects that are members of the group.&quot;&quot;&quot;</span>
+        <span class="n">processedGroups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">guid</span><span class="p">)</span>
+        <span class="c"># we need to keep track of which groups have been enumerated so far so that</span>
+        <span class="c"># we don&#39;t enter an infinite loop accidentally if group A is a member</span>
+        <span class="c"># of group B and group B is a member of group A. Yes, this can actually happen.</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;member&#39;</span><span class="p">):</span>
+            <span class="n">pyADobj</span> <span class="o">=</span> <span class="n">ADObject</span><span class="p">(</span><span class="n">dn</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_make_options</span><span class="p">)</span>
+            <span class="n">pyADobj</span><span class="o">.</span><span class="n">adjust_pyad_type</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">pyADobj</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s">&#39;group&#39;</span> <span class="ow">and</span> <span class="n">pyADobj</span><span class="o">.</span><span class="n">guid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">processedGroups</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">recursive</span><span class="p">:</span>
+                    <span class="n">m</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pyADobj</span><span class="o">.</span><span class="n">_get_members</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                        <span class="n">ignoreGroups</span><span class="o">=</span><span class="n">ignoreGroups</span><span class="p">,</span>
+                        <span class="n">processedGroups</span><span class="o">=</span><span class="n">processedGroups</span><span class="p">))</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">ignoreGroups</span><span class="p">:</span>
+                    <span class="n">m</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pyADobj</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">pyADobj</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="s">&quot;group&quot;</span><span class="p">:</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pyADobj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">((</span><span class="nb">set</span><span class="p">(</span><span class="n">m</span><span class="p">)))</span> <span class="c"># converting to set removes duplicates</span>
+
+<div class="viewcode-block" id="ADGroup.sync_membership"><a class="viewcode-back" href="../../objects.html#pyad.adgroup.ADGroup.sync_membership">[docs]</a>    <span class="k">def</span> <span class="nf">sync_membership</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_population</span><span class="p">):</span>
+        <span class="s">&quot;Synchronizes membership of group so that it matches the list of entries in new_population&quot;</span>
+        <span class="n">current_members</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_members</span><span class="p">())</span>
+        <span class="n">new_population</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">new_population</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_members</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">new_population</span> <span class="o">-</span> <span class="n">current_members</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_members</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">current_members</span> <span class="o">-</span> <span class="n">new_population</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="ADGroup.check_contains_member"><a class="viewcode-back" href="../../objects.html#pyad.adgroup.ADGroup.check_contains_member">[docs]</a>    <span class="k">def</span> <span class="nf">check_contains_member</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check_member</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks whether a pyAD object is a member of the group.</span>
+<span class="sd">            check_member expects a pyAD object to be checked.</span>
+<span class="sd">            recursive expects True/False which determines whether the group membership will be searched recursively.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">check_member</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_members</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="n">recursive</span><span class="p">,</span> <span class="n">ignoreGroups</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="ADGroup.get_group_scope"><a class="viewcode-back" href="../../objects.html#pyad.adgroup.ADGroup.get_group_scope">[docs]</a>    <span class="k">def</span> <span class="nf">get_group_scope</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the group scope GLOBAL, UNIVERSAL, or LOCAL.&quot;&quot;&quot;</span>
+        <span class="n">group_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;groupType&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="n">c_global</span> <span class="o">=</span> <span class="n">pyadconstants</span><span class="o">.</span><span class="n">ADS_GROUP_TYPE</span><span class="p">[</span><span class="s">&#39;GLOBAL&#39;</span><span class="p">]</span>
+        <span class="n">c_universal</span> <span class="o">=</span> <span class="n">pyadconstants</span><span class="o">.</span><span class="n">ADS_GROUP_TYPE</span><span class="p">[</span><span class="s">&#39;UNIVERSAL&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">group_type</span> <span class="o">&amp;</span> <span class="n">pyadconstants</span><span class="o">.</span><span class="n">ADS_GROUP_TYPE</span><span class="p">[</span><span class="s">&#39;GLOBAL&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">c_global</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;GLOBAL&#39;</span>
+        <span class="k">elif</span> <span class="n">group_type</span> <span class="o">&amp;</span> <span class="n">pyadconstants</span><span class="o">.</span><span class="n">ADS_GROUP_TYPE</span><span class="p">[</span><span class="s">&#39;UNIVERSAL&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">c_universal</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;UNIVERSAL&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;LOCAL&#39;</span>
+</div>
+<div class="viewcode-block" id="ADGroup.set_group_scope"><a class="viewcode-back" href="../../objects.html#pyad.adgroup.ADGroup.set_group_scope">[docs]</a>    <span class="k">def</span> <span class="nf">set_group_scope</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_scope</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets group scope. new_scope expects GLOBAL, UNIVERSAL, or LOCAL.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">new_scope</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;LOCAL&#39;</span><span class="p">,</span><span class="s">&#39;GLOBAL&#39;</span><span class="p">,</span><span class="s">&#39;UNIVERSAL&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_attribute</span><span class="p">(</span><span class="s">&#39;groupType&#39;</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;groupType&#39;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span> \
+                            <span class="o">&amp;</span> <span class="n">pyadconstants</span><span class="o">.</span><span class="n">ADS_GROUP_TYPE</span><span class="p">[</span><span class="s">&#39;SECURITY_ENABLED&#39;</span><span class="p">])</span> \
+                            <span class="o">|</span> <span class="n">pyadconstants</span><span class="o">.</span><span class="n">ADS_GROUP_TYPE</span><span class="p">[</span><span class="n">new_scope</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidValue</span><span class="p">(</span><span class="s">&quot;new_scope&quot;</span><span class="p">,</span><span class="n">new_scope</span><span class="p">,(</span><span class="s">&#39;LOCAL&#39;</span><span class="p">,</span><span class="s">&#39;GLOBAL&#39;</span><span class="p">,</span><span class="s">&#39;UNIVERSAL&#39;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="ADGroup.get_group_type"><a class="viewcode-back" href="../../objects.html#pyad.adgroup.ADGroup.get_group_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_group_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns group type DISTRIBUTION or SECURITY.&quot;&quot;&quot;</span>
+        <span class="c"># 0x2, 0x4, 0x8 are the distribution group types since</span>
+        <span class="c"># a security group must include -0x80000000.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;groupType&#39;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">):</span> 
+            <span class="k">return</span> <span class="s">&#39;DISTRIBUTION&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;SECURITY&#39;</span>
+</div>
+<div class="viewcode-block" id="ADGroup.set_group_type"><a class="viewcode-back" href="../../objects.html#pyad.adgroup.ADGroup.set_group_type">[docs]</a>    <span class="k">def</span> <span class="nf">set_group_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets group type. new_type expects DISTRIBUTION or SECURITY.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">new_type</span> <span class="o">==</span> <span class="s">&#39;DISTRIBUTION&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_attribute</span><span class="p">(</span><span class="s">&#39;groupType&#39;</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;groupType&#39;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span> \
+                            <span class="o">^</span> <span class="n">pyadconstants</span><span class="o">.</span><span class="n">ADS_GROUP_TYPE</span><span class="p">[</span><span class="s">&#39;SECURITY_ENABLED&#39;</span><span class="p">]))</span>
+        <span class="k">elif</span> <span class="n">new_type</span> <span class="o">==</span> <span class="s">&#39;SECURITY&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_attribute</span><span class="p">(</span><span class="s">&#39;groupType&#39;</span><span class="p">,(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;groupType&#39;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span> \
+                            <span class="o">^</span> <span class="n">pyadconstants</span><span class="o">.</span><span class="n">ADS_GROUP_TYPE</span><span class="p">[</span><span class="s">&#39;SECURITY_ENABLED&#39;</span><span class="p">])</span> \
+                            <span class="o">|</span> <span class="n">_ADS_GROUP_TYPE</span><span class="p">[</span><span class="s">&#39;SECURITY_ENABLED&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidValue</span><span class="p">(</span><span class="s">&quot;new_type&quot;</span><span class="p">,</span><span class="n">new_type</span><span class="p">,(</span><span class="s">&#39;DISTRIBUTION&#39;</span><span class="p">,</span><span class="s">&#39;SECURITY&#39;</span><span class="p">))</span>
+</div></div>
+<span class="n">ADObject</span><span class="o">.</span><span class="n">_py_ad_object_mappings</span><span class="p">[</span><span class="s">&#39;group&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ADGroup</span>
+
+<span class="k">def</span> <span class="nf">__get_memberOfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s">&#39;all&#39;</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_memberOfs</span><span class="p">(</span><span class="n">recursive</span><span class="p">,</span> <span class="n">scope</span><span class="p">,</span> <span class="p">[])</span>
+
+<span class="k">def</span> <span class="nf">__is_member_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_memberOfs</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="n">recursive</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">___p_get_memberOfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s">&#39;all&#39;</span><span class="p">,</span> <span class="n">processed_groups</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a list of groups (ADGroup objects) that the current object is a member of.</span>
+
+<span class="sd">    recursive - True/False. This determines whether to return groups that the object is nested into indirectly.</span>
+<span class="sd">    scope - domain, forest, all. This determines whether to only return group membership within the current domain (queries from domain) (scope=domain),</span>
+<span class="sd">        the forest (will only include universal groups, queries from global catalog) (scope=forest), or both (scope=all)</span>
+<span class="sd">    processed_groups - reserved, leave empty.&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="bp">self</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">processed_groups</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">scope</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;domain&#39;</span><span class="p">,</span><span class="s">&#39;all&#39;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">dn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;memberOf&#39;</span><span class="p">):</span>
+                <span class="n">obj</span> <span class="o">=</span> <span class="n">ADGroup</span><span class="o">.</span><span class="n">from_dn</span><span class="p">(</span><span class="n">dn</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_make_options</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">recursive</span> <span class="ow">and</span> <span class="n">obj</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">processed_groups</span> <span class="ow">and</span> <span class="n">dn</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dn</span><span class="p">:</span>
+                    <span class="n">new_members</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_get_memberOfs</span><span class="p">(</span><span class="n">recursive</span><span class="p">,</span> <span class="n">scope</span><span class="p">,</span> <span class="n">processed_groups</span><span class="p">)</span>
+                    <span class="n">processed_groups</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_members</span><span class="p">)</span>
+                <span class="n">processed_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">scope</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;forest&#39;</span><span class="p">,</span><span class="s">&#39;all&#39;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">dn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;memberOf&#39;</span><span class="p">,</span><span class="n">source</span><span class="o">=</span><span class="s">&#39;GC&#39;</span><span class="p">):</span>
+                <span class="n">obj</span> <span class="o">=</span> <span class="n">ADGroup</span><span class="o">.</span><span class="n">from_dn</span><span class="p">(</span><span class="n">dn</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">recursive</span> <span class="ow">and</span> <span class="n">obj</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">processed_groups</span> <span class="ow">and</span> <span class="n">dn</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dn</span><span class="p">:</span>
+                    <span class="n">new_members</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_get_memberOfs</span><span class="p">(</span><span class="n">recursive</span><span class="p">,</span> <span class="n">scope</span><span class="p">,</span> <span class="n">processed_groups</span><span class="p">)</span>
+                    <span class="n">processed_groups</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_members</span><span class="p">)</span>
+                <span class="n">processed_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">processed_groups</span><span class="p">))</span>
+
+<span class="n">ADObject</span><span class="o">.</span><span class="n">get_memberOfs</span> <span class="o">=</span> <span class="n">__get_memberOfs</span>
+<span class="n">ADObject</span><span class="o">.</span><span class="n">is_member_of</span> <span class="o">=</span> <span class="n">__is_member_of</span>
+<span class="n">ADObject</span><span class="o">.</span><span class="n">_get_memberOfs</span> <span class="o">=</span> <span class="n">___p_get_memberOfs</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Python Active Directory Tools 0.4.19 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Zakir Durumeric.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

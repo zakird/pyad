@@ -1,0 +1,576 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Manipulating Active Directory Objects &mdash; Python Active Directory Tools 0.4.19 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.4.19',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Python Active Directory Tools 0.4.19 documentation" href="index.html" />
+    <link rel="prev" title="Active Directory Basics" href="pyad.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyad.html" title="Active Directory Basics"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Python Active Directory Tools 0.4.19 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="manipulating-active-directory-objects">
+<h1>Manipulating Active Directory Objects<a class="headerlink" href="#manipulating-active-directory-objects" title="Permalink to this headline">¶</a></h1>
+<p>That has a paragraph about a main subject and is set when the &#8216;=&#8217;
+is at least the same length of the title itself.</p>
+<div class="section" id="adobject">
+<h2>ADObject<a class="headerlink" href="#adobject" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pyad.adobject.ADObject">
+<em class="property">class </em><tt class="descclassname">pyad.adobject.</tt><tt class="descname">ADObject</tt><big>(</big><em>distinguished_name=None</em>, <em>adsi_ldap_com_object=None</em>, <em>options={}</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Python object that represents any active directory object.</p>
+<dl class="method">
+<dt id="pyad.adobject.ADObject.add_to_group">
+<tt class="descname">add_to_group</tt><big>(</big><em>group</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.add_to_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.add_to_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds current object to the specified group.
+group expects an ADGroup object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyad.adobject.ADObject.adsPath">
+<tt class="descname">adsPath</tt><a class="headerlink" href="#pyad.adobject.ADObject.adsPath" title="Permalink to this definition">¶</a></dt>
+<dd><p>ADsPath of Active Directory object (such as &#8216;<a class="reference external" href="LDAP://cn=me,...,dc=com">LDAP://cn=me,...,dc=com</a>&#8216;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.append_to_attribute">
+<tt class="descname">append_to_attribute</tt><big>(</big><em>attribute</em>, <em>valuesToAppend</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.append_to_attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.append_to_attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends values in list valuesToAppend to the specified multi-valued attribute.
+valuesToAppend can contain a single value or a list of multiple values.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.clear_attribute">
+<tt class="descname">clear_attribute</tt><big>(</big><em>attribute</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.clear_attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.clear_attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears (removes) the specified LDAP attribute from the object.
+Identical to setting the attribute to None or [].</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.clear_managedby">
+<tt class="descname">clear_managedby</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.clear_managedby"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.clear_managedby" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets object to be managedBy nobody</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.delete">
+<tt class="descname">delete</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes the object from the domain</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.disable">
+<tt class="descname">disable</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.disable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.disable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disables the user or computer</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyad.adobject.ADObject.dn">
+<tt class="descname">dn</tt><a class="headerlink" href="#pyad.adobject.ADObject.dn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distinguished Name (DN) of the object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.dump_to_xml">
+<tt class="descname">dump_to_xml</tt><big>(</big><em>whitelist_attributes=</em><span class="optional">[</span><span class="optional">]</span>, <em>blacklist_attributes=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.dump_to_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.dump_to_xml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dumps object and all human-readable attributes to an xml document which is returned as a string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.enable">
+<tt class="descname">enable</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.enable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.enable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables the user or computer</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pyad.adobject.ADObject.from_com_object">
+<em class="property">classmethod </em><tt class="descname">from_com_object</tt><big>(</big><em>com_object</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.from_com_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.from_com_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates ADObject based on an existing ADSI com object</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pyad.adobject.ADObject.from_dn">
+<em class="property">classmethod </em><tt class="descname">from_dn</tt><big>(</big><em>distinguished_name</em>, <em>options={}</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.from_dn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.from_dn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates ADObject based on distinguished name</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pyad.adobject.ADObject.from_guid">
+<em class="property">classmethod </em><tt class="descname">from_guid</tt><big>(</big><em>guid</em>, <em>options={}</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.from_guid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.from_guid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates ADObject based on  GUID</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.get_allowed_attributes">
+<tt class="descname">get_allowed_attributes</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.get_allowed_attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.get_allowed_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of allowed attributes for the particular object.
+These attributes may be defined, but are not guaranteed to be.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.get_attribute">
+<tt class="descname">get_attribute</tt><big>(</big><em>attribute</em>, <em>always_return_list=True</em>, <em>source='LDAP'</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.get_attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.get_attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the value of any allowable LDAP attribute of the specified object.</p>
+<dl class="docutils">
+<dt>Keyword arguments:</dt>
+<dd><p class="first">attribute &#8211; any schema-allowed LDAP attribute (case insensitive). The attribute does not need to be defined.
+always_return_list &#8211; if an attribute has a single value, this specifies whether to return only the</p>
+<blockquote>
+<div>value or to return a list containing the single value. Similarly, if true, a query on an undefined
+attribute will return an empty list instead of a None object. If querying an attribute known to only
+contain at most one element, then it is easier to set to false. Otherwise, if querying a potentially
+multi-valued attribute, it is safest to leave at default.</div></blockquote>
+<p class="last">source &#8211; either &#8216;LDAP&#8217; or &#8216;GC&#8217;</p>
+</dd>
+<dt>Note to experienced ADSI users:</dt>
+<dd><ul class="first last simple">
+<li>If an attribute is undefined, getAttribute() will return None or [] and will not choke on the attribute.</li>
+<li>In regards to always_return_list, True has similar behavior to getEx() whereas False is similar to Get().</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.get_domain">
+<tt class="descname">get_domain</tt><big>(</big><big>)</big><a class="headerlink" href="#pyad.adobject.ADObject.get_domain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the domain to which the object belongs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.get_mandatory_attributes">
+<tt class="descname">get_mandatory_attributes</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.get_mandatory_attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.get_mandatory_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of mandatory attributes for the particular object.
+These attributes are guaranteed to be defined.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.get_memberOfs">
+<tt class="descname">get_memberOfs</tt><big>(</big><em>recursive=False</em>, <em>scope='all'</em><big>)</big><a class="headerlink" href="#pyad.adobject.ADObject.get_memberOfs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the groups that this object is a member of</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.get_optional_attributes">
+<tt class="descname">get_optional_attributes</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.get_optional_attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.get_optional_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of optional attributes for the particular object.
+These attributes may be defined, but are not guaranteed to be.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.get_user_account_control_settings">
+<tt class="descname">get_user_account_control_settings</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.get_user_account_control_settings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.get_user_account_control_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of settings stored within UserAccountControl.
+Expected keys for the dictionary are the same as keys in the ADS_USER_FLAG dictionary.
+Further information on these values can be found at
+<a class="reference external" href="http://msdn.microsoft.com/en-us/library/aa772300.aspx">http://msdn.microsoft.com/en-us/library/aa772300.aspx</a>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyad.adobject.ADObject.guid">
+<tt class="descname">guid</tt><a class="headerlink" href="#pyad.adobject.ADObject.guid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object GUID of the object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyad.adobject.ADObject.guid_str">
+<tt class="descname">guid_str</tt><a class="headerlink" href="#pyad.adobject.ADObject.guid_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object GUID of the object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.is_member_of">
+<tt class="descname">is_member_of</tt><big>(</big><em>group</em>, <em>recursive=False</em><big>)</big><a class="headerlink" href="#pyad.adobject.ADObject.is_member_of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether this object is a member of the given group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.move">
+<tt class="descname">move</tt><big>(</big><em>new_ou_object</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.move"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.move" title="Permalink to this definition">¶</a></dt>
+<dd><p>Moves the object to a new organizationalUnit.</p>
+<p>new_ou_object expects a ADContainer object where the current object will be moved to.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyad.adobject.ADObject.parent_container">
+<tt class="descname">parent_container</tt><a class="headerlink" href="#pyad.adobject.ADObject.parent_container" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object representing the container in which this object lives</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyad.adobject.ADObject.parent_container_path">
+<tt class="descname">parent_container_path</tt><a class="headerlink" href="#pyad.adobject.ADObject.parent_container_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the DN of the object&#8217;s parent container.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyad.adobject.ADObject.prefixed_cn">
+<tt class="descname">prefixed_cn</tt><a class="headerlink" href="#pyad.adobject.ADObject.prefixed_cn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prefixed CN (such as &#8216;cn=mycomputer&#8217; or &#8216;ou=mycontainer&#8217; of the object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.remove_from_attribute">
+<tt class="descname">remove_from_attribute</tt><big>(</big><em>attribute</em>, <em>valuesToRemove</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.remove_from_attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.remove_from_attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes any values in list valuesToRemove from the specified multi-valued attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.remove_from_group">
+<tt class="descname">remove_from_group</tt><big>(</big><em>group</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.remove_from_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.remove_from_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes current object from the specified group.
+group expects an ADGroup object to which the current object belongs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.rename">
+<tt class="descname">rename</tt><big>(</big><em>new_name</em>, <em>set_sAMAccountName=True</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.rename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.rename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renames the current object within its current organizationalUnit.
+new_name expects the new name of the object (just CN not prefixed CN or distinguishedName).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.set_managedby">
+<tt class="descname">set_managedby</tt><big>(</big><em>user</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.set_managedby"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.set_managedby" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets managedBy on object to the specified user</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.set_user_account_control_setting">
+<tt class="descname">set_user_account_control_setting</tt><big>(</big><em>userFlag</em>, <em>newValue</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.set_user_account_control_setting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.set_user_account_control_setting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets a single setting in UserAccountControl.</p>
+<p>UserFlag must be a value from ADS_USER_FLAG dictionary keys.
+More information can be found at <a class="reference external" href="http://msdn.microsoft.com/en-us/library/aa772300.aspx">http://msdn.microsoft.com/en-us/library/aa772300.aspx</a>.
+newValue accepts boolean values</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyad.adobject.ADObject.sid">
+<tt class="descname">sid</tt><a class="headerlink" href="#pyad.adobject.ADObject.sid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the SID of the Active Directory object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyad.adobject.ADObject.type">
+<tt class="descname">type</tt><a class="headerlink" href="#pyad.adobject.ADObject.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>pyAD object type (user, computer, group, organizationalUnit, domain).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.update_attribute">
+<tt class="descname">update_attribute</tt><big>(</big><em>attribute</em>, <em>newvalue</em>, <em>no_flush=False</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.update_attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.update_attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates any mutable LDAP attribute for the object. If you are adding or removing
+values from a multi-valued attribute, see append_to_attribute and remove_from_attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adobject.ADObject.update_attributes">
+<tt class="descname">update_attributes</tt><big>(</big><em>attribute_value_dict</em><big>)</big><a class="reference internal" href="_modules/pyad/adobject.html#ADObject.update_attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adobject.ADObject.update_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates multiple attributes in a single transaction
+attribute_value_dict should contain a dictionary of values keyed by attribute name</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="aduser">
+<h2>ADUser<a class="headerlink" href="#aduser" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pyad.aduser.ADUser">
+<em class="property">class </em><tt class="descclassname">pyad.aduser.</tt><tt class="descname">ADUser</tt><big>(</big><em>distinguished_name=None</em>, <em>adsi_ldap_com_object=None</em>, <em>options={}</em><big>)</big><a class="reference internal" href="_modules/pyad/aduser.html#ADUser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.aduser.ADUser" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="classmethod">
+<dt id="pyad.aduser.ADUser.create">
+<em class="property">classmethod </em><tt class="descname">create</tt><big>(</big><em>name</em>, <em>container_object</em>, <em>password=None</em>, <em>upn_suffix=None</em>, <em>enable=True</em>, <em>optional_attributes={}</em><big>)</big><a class="reference internal" href="_modules/pyad/aduser.html#ADUser.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.aduser.ADUser.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and returns a new active directory user</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.aduser.ADUser.force_pwd_change_on_login">
+<tt class="descname">force_pwd_change_on_login</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/aduser.html#ADUser.force_pwd_change_on_login"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.aduser.ADUser.force_pwd_change_on_login" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forces the user to change their password the next time they login</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.aduser.ADUser.get_password_last_set">
+<tt class="descname">get_password_last_set</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/aduser.html#ADUser.get_password_last_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.aduser.ADUser.get_password_last_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns datetime object of when user last reset their password.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.aduser.ADUser.set_expiration">
+<tt class="descname">set_expiration</tt><big>(</big><em>dt</em><big>)</big><a class="reference internal" href="_modules/pyad/aduser.html#ADUser.set_expiration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.aduser.ADUser.set_expiration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the expiration date of the password to the given value</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.aduser.ADUser.set_password">
+<tt class="descname">set_password</tt><big>(</big><em>password</em><big>)</big><a class="reference internal" href="_modules/pyad/aduser.html#ADUser.set_password"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.aduser.ADUser.set_password" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the users password</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="adcomputer">
+<h2>ADComputer<a class="headerlink" href="#adcomputer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pyad.adcomputer.ADComputer">
+<em class="property">class </em><tt class="descclassname">pyad.adcomputer.</tt><tt class="descname">ADComputer</tt><big>(</big><em>distinguished_name=None</em>, <em>adsi_ldap_com_object=None</em>, <em>options={}</em><big>)</big><a class="reference internal" href="_modules/pyad/adcomputer.html#ADComputer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adcomputer.ADComputer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Python class representing a computer object in Active Directory.</p>
+<dl class="classmethod">
+<dt id="pyad.adcomputer.ADComputer.create">
+<em class="property">classmethod </em><tt class="descname">create</tt><big>(</big><em>name</em>, <em>container_object</em>, <em>enable=True</em>, <em>optional_attributes={}</em><big>)</big><a class="reference internal" href="_modules/pyad/adcomputer.html#ADComputer.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adcomputer.ADComputer.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and returns a new computer object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adcomputer.ADComputer.get_creator">
+<tt class="descname">get_creator</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/adcomputer.html#ADComputer.get_creator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adcomputer.ADComputer.get_creator" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns ADUser object of the user who added the computer to the domain. Returns None if user no longer exists.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="adgroup">
+<h2>ADGroup<a class="headerlink" href="#adgroup" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pyad.adgroup.ADGroup">
+<em class="property">class </em><tt class="descclassname">pyad.adgroup.</tt><tt class="descname">ADGroup</tt><big>(</big><em>distinguished_name=None</em>, <em>adsi_ldap_com_object=None</em>, <em>options={}</em><big>)</big><a class="reference internal" href="_modules/pyad/adgroup.html#ADGroup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adgroup.ADGroup" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pyad.adgroup.ADGroup.add_members">
+<tt class="descname">add_members</tt><big>(</big><em>members</em><big>)</big><a class="reference internal" href="_modules/pyad/adgroup.html#ADGroup.add_members"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adgroup.ADGroup.add_members" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accepts a list of pyAD objects or a single pyAD object and adds as members to the group.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adgroup.ADGroup.check_contains_member">
+<tt class="descname">check_contains_member</tt><big>(</big><em>check_member</em>, <em>recursive=False</em><big>)</big><a class="reference internal" href="_modules/pyad/adgroup.html#ADGroup.check_contains_member"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adgroup.ADGroup.check_contains_member" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether a pyAD object is a member of the group.
+check_member expects a pyAD object to be checked.
+recursive expects True/False which determines whether the group membership will be searched recursively.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pyad.adgroup.ADGroup.create">
+<em class="property">classmethod </em><tt class="descname">create</tt><big>(</big><em>name</em>, <em>container_object</em>, <em>security_enabled=True</em>, <em>scope='GLOBAL'</em>, <em>optional_attributes={}</em><big>)</big><a class="reference internal" href="_modules/pyad/adgroup.html#ADGroup.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adgroup.ADGroup.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and returns a new group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adgroup.ADGroup.get_group_scope">
+<tt class="descname">get_group_scope</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/adgroup.html#ADGroup.get_group_scope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adgroup.ADGroup.get_group_scope" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the group scope GLOBAL, UNIVERSAL, or LOCAL.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adgroup.ADGroup.get_group_type">
+<tt class="descname">get_group_type</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/adgroup.html#ADGroup.get_group_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adgroup.ADGroup.get_group_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns group type DISTRIBUTION or SECURITY.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adgroup.ADGroup.get_members">
+<tt class="descname">get_members</tt><big>(</big><em>recursive=False</em>, <em>ignoreGroups=False</em><big>)</big><a class="reference internal" href="_modules/pyad/adgroup.html#ADGroup.get_members"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adgroup.ADGroup.get_members" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of group members.
+recursive - True/False. Determines whether to recursively traverse through nested groups.
+ignoreGroups - True/False. Determines whether or not to return an ADGroup objects in list or to ignore them.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adgroup.ADGroup.remove_all_members">
+<tt class="descname">remove_all_members</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/adgroup.html#ADGroup.remove_all_members"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adgroup.ADGroup.remove_all_members" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all members of the group.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adgroup.ADGroup.remove_members">
+<tt class="descname">remove_members</tt><big>(</big><em>members</em><big>)</big><a class="reference internal" href="_modules/pyad/adgroup.html#ADGroup.remove_members"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adgroup.ADGroup.remove_members" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accepts a list of pyAD objects or a single pyAD object and removes these as members from the group.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adgroup.ADGroup.set_group_scope">
+<tt class="descname">set_group_scope</tt><big>(</big><em>new_scope</em><big>)</big><a class="reference internal" href="_modules/pyad/adgroup.html#ADGroup.set_group_scope"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adgroup.ADGroup.set_group_scope" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets group scope. new_scope expects GLOBAL, UNIVERSAL, or LOCAL.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adgroup.ADGroup.set_group_type">
+<tt class="descname">set_group_type</tt><big>(</big><em>new_type</em><big>)</big><a class="reference internal" href="_modules/pyad/adgroup.html#ADGroup.set_group_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adgroup.ADGroup.set_group_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets group type. new_type expects DISTRIBUTION or SECURITY.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adgroup.ADGroup.sync_membership">
+<tt class="descname">sync_membership</tt><big>(</big><em>new_population</em><big>)</big><a class="reference internal" href="_modules/pyad/adgroup.html#ADGroup.sync_membership"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adgroup.ADGroup.sync_membership" title="Permalink to this definition">¶</a></dt>
+<dd><p>Synchronizes membership of group so that it matches the list of entries in new_population</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="adcontainer">
+<h2>ADContainer<a class="headerlink" href="#adcontainer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pyad.adcontainer.ADContainer">
+<em class="property">class </em><tt class="descclassname">pyad.adcontainer.</tt><tt class="descname">ADContainer</tt><big>(</big><em>distinguished_name=None</em>, <em>adsi_ldap_com_object=None</em>, <em>options={}</em><big>)</big><a class="reference internal" href="_modules/pyad/adcontainer.html#ADContainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adcontainer.ADContainer" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pyad.adcontainer.ADContainer.create_computer">
+<tt class="descname">create_computer</tt><big>(</big><em>name</em>, <em>enable=True</em>, <em>optional_attributes={}</em><big>)</big><a class="reference internal" href="_modules/pyad/adcontainer.html#ADContainer.create_computer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adcontainer.ADContainer.create_computer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new computer object in the container</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adcontainer.ADContainer.create_container">
+<tt class="descname">create_container</tt><big>(</big><em>name</em>, <em>optional_attributes={}</em><big>)</big><a class="reference internal" href="_modules/pyad/adcontainer.html#ADContainer.create_container"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adcontainer.ADContainer.create_container" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new organizational unit in the container</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adcontainer.ADContainer.create_group">
+<tt class="descname">create_group</tt><big>(</big><em>name</em>, <em>security_enabled=True</em>, <em>scope='GLOBAL'</em>, <em>optional_attributes={}</em><big>)</big><a class="reference internal" href="_modules/pyad/adcontainer.html#ADContainer.create_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adcontainer.ADContainer.create_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new group object in the container</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adcontainer.ADContainer.create_user">
+<tt class="descname">create_user</tt><big>(</big><em>name</em>, <em>password=None</em>, <em>upn_suffix=None</em>, <em>enable=True</em>, <em>optional_attributes={}</em><big>)</big><a class="reference internal" href="_modules/pyad/adcontainer.html#ADContainer.create_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adcontainer.ADContainer.create_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new user object in the container</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adcontainer.ADContainer.get_children">
+<tt class="descname">get_children</tt><big>(</big><em>recursive=False</em>, <em>filter_=None</em><big>)</big><a class="reference internal" href="_modules/pyad/adcontainer.html#ADContainer.get_children"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adcontainer.ADContainer.get_children" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over the children objects in the container.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyad.adcontainer.ADContainer.remove_child">
+<tt class="descname">remove_child</tt><big>(</big><em>child</em><big>)</big><a class="reference internal" href="_modules/pyad/adcontainer.html#ADContainer.remove_child"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.adcontainer.ADContainer.remove_child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rremoves the child object from the domain</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="addomain">
+<h2>ADDomain<a class="headerlink" href="#addomain" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pyad.addomain.ADDomain">
+<em class="property">class </em><tt class="descclassname">pyad.addomain.</tt><tt class="descname">ADDomain</tt><big>(</big><em>distinguished_name=None</em>, <em>adsi_ldap_com_object=None</em>, <em>options={}</em><big>)</big><a class="reference internal" href="_modules/pyad/addomain.html#ADDomain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.addomain.ADDomain" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pyad.addomain.ADDomain.get_default_upn">
+<tt class="descname">get_default_upn</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pyad/addomain.html#ADDomain.get_default_upn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyad.addomain.ADDomain.get_default_upn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the default userPrincipalName for the domain.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Manipulating Active Directory Objects</a><ul>
+<li><a class="reference internal" href="#adobject">ADObject</a></li>
+<li><a class="reference internal" href="#aduser">ADUser</a></li>
+<li><a class="reference internal" href="#adcomputer">ADComputer</a></li>
+<li><a class="reference internal" href="#adgroup">ADGroup</a></li>
+<li><a class="reference internal" href="#adcontainer">ADContainer</a></li>
+<li><a class="reference internal" href="#addomain">ADDomain</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pyad.html"
+                        title="previous chapter">Active Directory Basics</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/objects.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pyad.html" title="Active Directory Basics"
+             >previous</a> |</li>
+        <li><a href="index.html">Python Active Directory Tools 0.4.19 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Zakir Durumeric.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>
