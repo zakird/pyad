@@ -193,30 +193,7 @@ class ADObject(ADBase):
     def _flush(self):
         "Commits any changes to the AD object."
         return self._ldap_adsi_obj.SetInfo()
-        
-    def __set_gc_adsi_obj(self):
-        if self._gc_adsi_obj:
-            return
-        if self.default_ldap_authentication_flag > 0:
-            _ds = self.adsi_provider.getObject('', self.default_ldap_protocol+":")
-            path = pyadutils.generate_ads_path(
-                        self.dn,
-                        'GC',
-                        self.default_gc_server,
-                        self.default_gc_port
-            )
-            self._ldap_adsi_obj = _ds.OpenDSObject(path,
-                            self.default_username,
-                            self.default_password,
-                            self.default_ldap_authentication_flag
-            )
-        else:
-            self._gc_adsi_obj = self.adsi_provider.GetObject('',
-                    pyadutils.generate_ads_path(self.dn, 'GC', 
-                            options.get('server'), options.get('port')
-                    )
-            )
-            
+    
     def __set_gc_adsi_obj(self):
         path = pyadutils.generate_ads_path(
                         self.dn,
