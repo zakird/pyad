@@ -1,0 +1,11 @@
+0.5.03 / 2013-7-7 / Zakir Durumeric, Alex Kavanaugh, nifhell
+
+	feature request: connections to Active Directory now be made with alternate credentials
+	feature request: ADQuery now allows page sizes greater than 1000 records
+
+0.5.04 / 2013-7-7 / Zakir Durumeric
+
+	bug report: now possible to connect to objects with commas in distinguishedName by using \, instead of ,.
+
+	
+	
