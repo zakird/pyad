@@ -15,7 +15,6 @@ Contents:
    pyad
    
    objects
-   
 
 
 Indices and tables
