@@ -8,4 +8,7 @@
 	bug report: now possible to connect to objects with commas in distinguishedName by using \, instead of ,.
 
 	
-	
+0.5.05 / 2013-7-18 / Zakir Durumeric
+
+	bug report: the escaped DNs produced by ADQuery are not compatible with the escapes expected by ADObject.from_dn(). ADObject is fixed to allow both types of escaping.
+	reported by: Jorrit Jorritsma	
