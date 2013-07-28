@@ -391,6 +391,10 @@ class ADObject(ADBase):
         # kudos to http://docs.activestate.com/activepython/2.6/pywin32/html/com/help/active_directory.html
         return pyadutils.convert_datetime(self.get_attribute('pwdLastSet', False))
 
+    def get_uSNChanged(self)
+        """Returns uSNChanged as a single integer from the current domain controller"""
+        return pyadutils.convert_bigint(self.get_attribute('uSNChanged', False)) 
+        
     def move(self, new_ou_object):
         """Moves the object to a new organizationalUnit.
 

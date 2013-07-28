@@ -63,6 +63,14 @@ def convert_datetime(adsi_time_com_obj):
     # http://docs.activestate.com/activepython/2.6/pywin32/html/com/help/active_directory.html. 
     return datetime.datetime.fromtimestamp((((long(adsi_time_com_obj.highpart) << 32)\
         + long(adsi_time_com_obj.lowpart)) - 116444736000000000L)/10000000)
+        
+def convert_bigint(obj):
+    # based on http://www.selfadsi.org/ads-attributes/user-usnChanged.htm
+    h, l = obj.HighPart, obj.LowPart
+    if l < 0:
+        h += 1
+    return (h << 32) + l
+
 
 def convert_guid(guid_object):
     return pywintypes.IID(guid_object, True)
