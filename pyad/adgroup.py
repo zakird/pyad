@@ -39,7 +39,7 @@ class ADGroup(ADObject):
         # of group B and group B is a member of group A. Yes, this can actually happen.
         m = []
         for dn in self.get_attribute('member'):
-            pyADobj = ADObject(dn, options=self._make_options)
+            pyADobj = ADObject(dn, options=self._make_options())
             pyADobj.adjust_pyad_type()
             if pyADobj.type == 'group' and pyADobj.guid not in processedGroups:
                 if recursive:
