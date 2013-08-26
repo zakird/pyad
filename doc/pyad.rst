@@ -114,3 +114,19 @@ As shown above, objects can be directly connected to via CN, DN, GUID, or UPN. H
     
     for row in q.get_results():
         print row["distinguishedName"]
+
+When you search an AD Forest for users you will likely want to search on "CN", you can simulate a SQL 'LIKE' where clause with the AD wildcard character '*'. E.g. cn='\*john\*'. ::
+
+    import pyad.adquery as adquery
+    import pprint
+    
+    q = adquery.ADQuery()
+    
+    q.execute_query(
+        attributes = ["distinguishedName", "description", "cn"],
+        where_clause=("cn = '*john*'"), 
+    )
+        
+    for row in q.get_results(): 
+        pprint.pprint( row )
+        
