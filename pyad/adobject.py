@@ -13,7 +13,7 @@ class ADObject(ADBase):
     _optional_attributes = None
     _py_ad_object_mappings = {}
     
-    def __set_adsi_obj(self, distinguished_name):
+    def __set_adsi_obj(self):
         """Internal method that creates the connection to the backend ADSI object."""
     
         if self.default_username and self.default_password:
@@ -82,7 +82,7 @@ class ADObject(ADBase):
                             self.default_ldap_server,
                             self.default_ldap_port
             )
-            self.__set_adsi_obj(distinguished_name)
+            self.__set_adsi_obj()
         else:
             raise Exception("Either a distinguished name or a COM object must be provided to create an ADObject")
 
