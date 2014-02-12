@@ -18,7 +18,7 @@ def from_dn(distinguished_name, options={}):
     except InvalidObjectException:
         return None
 
-def from_guid(cls, guid, options={}):
+def from_guid(guid, options={}):
     "Generates ADObject based on  GUID"
     try:
         q = ADObject.from_guid(guid, options)
