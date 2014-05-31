@@ -19,17 +19,21 @@ except ImportError:
 from pyadconstants import *
 from pyadexceptions import *
 
-# create connection to ADSI COM object
-_adsi_provider = win32com.client.Dispatch('ADsNameSpaces')
-
-# Discover default domain and forest information
-__default_domain_obj = _adsi_provider.GetObject('', "LDAP://rootDSE")
-
-# connecting to rootDSE will connect to the domain that the
-# current logged-in user belongs to.. which is generally the
-# domain under question and therefore becomes the default domain.
-_default_detected_forest = __default_domain_obj.Get("rootDomainNamingContext")
-_default_detected_domain = __default_domain_obj.Get("defaultNamingContext")
+try:
+    # Discover default domain and forest information
+    __default_domain_obj = _adsi_provider.GetObject('', "LDAP://rootDSE")
+except:
+    # If there was an error, this this computer might not be on a domain.
+    print "WARN: unable to connect to default domain. Computer is likely not attached to an AD domain"
+    __default_domain_obj = None
+    _default_detected_forest = None
+    _default_detected_domain = None
+else:
+    # connecting to rootDSE will connect to the domain that the
+    # current logged-in user belongs to.. which is generally the
+    # domain under question and therefore becomes the default domain.
+    _default_detected_forest = __default_domain_obj.Get("rootDomainNamingContext")
+    _default_detected_domain = __default_domain_obj.Get("defaultNamingContext")
 
 
 class ADBase(object):
@@ -72,6 +76,18 @@ class ADBase(object):
             if val:
                 options[key] = val
         return options
+        
+    @property
+    def _safe_default_domain(self):
+        if self.default_domain:
+            return self.default_domain
+        raise Exception("Unable to detect default domain. Must specify search base.")
+        
+    @property
+    def _safe_default_forest(self):
+        if self.default_forest:
+            return self.default_forest
+        raise Exception("Unable to detect default forest. Must specify search base.")
 
 def set_defaults(**kwargs):
     for k, v in kwargs.iteritems():
