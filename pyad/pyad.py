@@ -18,11 +18,10 @@ def from_dn(distinguished_name, options={}):
     except InvalidObjectException:
         return None
 
-def from_guid(cls, guid, options={}):
+def from_guid(guid, options={}):
     "Generates ADObject based on  GUID"
     try:
-        guid = "<GUID=%s>" % guid.strip('}').strip('{')
-        q = ADObject.from_dn(guid, options)
+        q = ADObject.from_guid(guid, options)
         q.adjust_pyad_type()
         return q
     except InvalidObjectException:
