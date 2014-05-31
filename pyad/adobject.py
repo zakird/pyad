@@ -390,6 +390,10 @@ class ADObject(ADBase):
         # http://www.microsoft.com/technet/scriptcenter/topics/win2003/lastlogon.mspx
         # kudos to http://docs.activestate.com/activepython/2.6/pywin32/html/com/help/active_directory.html
         return pyadutils.convert_datetime(self.get_attribute('pwdLastSet', False))
+        
+    def get_last_login(self):
+        """Returns datetime object of when user last login on the connected domain controller."""
+        return pyadutils.convert_datetime(self.get_attribute('lastLogonTimestamp', False))
 
     def get_uSNChanged(self):
         """Returns uSNChanged as a single integer from the current domain controller"""
