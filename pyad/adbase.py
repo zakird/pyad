@@ -19,6 +19,8 @@ except ImportError:
 from pyadconstants import *
 from pyadexceptions import *
 
+_adsi_provider = win32com.client.Dispatch('ADsNameSpaces')
+
 try:
     # Discover default domain and forest information
     __default_domain_obj = _adsi_provider.GetObject('', "LDAP://rootDSE")
