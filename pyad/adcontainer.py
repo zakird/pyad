@@ -91,3 +91,4 @@ class ADContainer(ADObject):
         self._ldap_adsi_obj.Delete(child.type, child.prefixed_cn)
         
 ADObject._py_ad_object_mappings['organizationalUnit'] = ADContainer
+ADObject._py_ad_object_mappings['container'] = ADContainer
