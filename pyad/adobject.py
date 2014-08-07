@@ -137,7 +137,13 @@ class ADObject(ADBase):
         return cls(distinguished_name=None, adsi_ldap_com_object=com_object)
 
     def __get_prefixed_cn(self):
-        prefix = 'ou' if self.type == 'organizationalUnit' else 'cn'
+        prefix = None
+        if self.type == 'organizationalUnit': 
+            prefix = 'ou'
+        elif self.type == "domain":
+            prefix = 'dc'
+        else:
+            prefix = 'cn'
         return '='.join((prefix, self.get_attribute(prefix, False)))
 
     def __get_object_sid(self):
