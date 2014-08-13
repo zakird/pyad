@@ -58,8 +58,8 @@ class ADQuery(ADBase):
         
         command = win32com.client.Dispatch("ADODB.Command")
         command.ActiveConnection = self.__adodb_conn
-        command.Properties("Page Size").value = page_size
-        command.Properties("Searchscope").value = ADQuery.ADS_SCOPE_SUBTREE
+        command.Properties("Page Size").Value = page_size
+        command.Properties("Searchscope").Value = ADQuery.ADS_SCOPE_SUBTREE
         
         command.CommandText = query
         self.__rs, self.__rc = command.Execute()
