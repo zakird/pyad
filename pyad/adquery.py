@@ -34,7 +34,7 @@ class ADQuery(ADBase):
             self.__adodb_conn.Properties("Password").Value = self.default_password
             adsi_flag = ADQuery.ADS_SECURE_AUTHENTICATION | \
                             ADQuery.ADS_USE_ENCRYPTION
-            self.__adodb_conn.Properties("ADSI Flag").value = adsi_flag
+            self.__adodb_conn.Properties("ADSI Flag").Value = adsi_flag
             
         self.reset()
     
