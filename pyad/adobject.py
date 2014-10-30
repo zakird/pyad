@@ -518,8 +518,6 @@ class ADObject(ADBase):
     def adjust_pyad_type(self):
         if self.type in self._py_ad_object_mappings.keys():
             self.__class__ = self._py_ad_object_mappings[self.type]
-        else:
-            raise Exception("Unkown type. Adjustment not possible.")
 
     def __get_parent_container(self):
         q = ADObject.from_dn(self.parent_container_path,
