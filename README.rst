@@ -1,7 +1,7 @@
 Introduction
 ============
 
-pyad is a Python library designed to provide a simple, Pythonic interface to Active Directory through ADSI on the Windows platform. Complete documentation can be found at https://zakird.com/pyad. Code is maintained at https://github.com/zakird/pyad. The library can be downloaded from PyPI at https://pypi.python.org/pypi.
+pyad is a Python library designed to provide a simple, Pythonic interface to Active Directory through ADSI on the Windows platform. Complete documentation can be found at https://zakird.com/pyad. Code is maintained at https://github.com/zakird/pyad. The library can be downloaded from PyPI at https://pypi.python.org/pypi/pyad.
 
 
 Requirements
