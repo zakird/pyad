@@ -171,10 +171,13 @@ class ADObject(ADBase):
         # guid is always unique so that we can depend on that for providing a unique hash
         return hash(self.guid)
 
-    def __str__(self):
-        return "<%s '%s'>" % (self.__class__.__name__, self.dn)
+    def __unicode__(self):
+        return u"<{} '{}'>".format(self.__class__.__name__, self.__distinguished_name)
 
-    __repr__ = __str__
+    def __repr__(self):
+        u = self.__unicode__()
+        s = u.encode("mbcs")
+        return s
 
     def __cmp__(self, other):
         # it doesn't make sense why you'd ever have to decide
