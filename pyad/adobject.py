@@ -172,7 +172,7 @@ class ADObject(ADBase):
         return hash(self.guid)
 
     def __str__(self):
-        return "<%s '%s'>" % (self.__class__.__name__, self.dn)
+        return u"<%s '%s'>" % (self.__class__.__name__, self.dn)
 
     __repr__ = __str__
 
