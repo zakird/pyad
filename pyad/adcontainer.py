@@ -32,7 +32,7 @@ class ADContainer(ADObject):
                 upn_suffix = self.get_domain().get_default_upn()
             upn = '@'.join((name, upn_suffix))
             obj = self.__create_object('user', name)
-            obj.Put('sAMAccountName', name)
+            obj.Put('sAMAccountName', optional_attributes.get('sAMAccountName', name))
             obj.Put('userPrincipalName', upn)
             obj.SetInfo()
             pyadobj = ADUser.from_com_object(obj)
