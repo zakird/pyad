@@ -46,7 +46,7 @@ class ADQuery(ADBase):
         self.__queried = False
 
     def execute_query(self, attributes=["distinguishedName"], where_clause=None,
-                    type="LDAP", base_dn=None, page_size=1000, options={}):
+                    type="LDAP", base_dn=None, page_size=1000, search_scope="subtree", options={}):
         assert type in ("LDAP", "GC")
         if not base_dn:
             if type == "LDAP": 
@@ -62,8 +62,16 @@ class ADQuery(ADBase):
         command = win32com.client.Dispatch("ADODB.Command")
         command.ActiveConnection = self.__adodb_conn
         command.Properties("Page Size").Value = page_size
-        command.Properties("Searchscope").Value = ADQuery.ADS_SCOPE_SUBTREE
-        
+        if search_scope=="subtree":
+            command.Properties("Searchscope").Value = ADQuery.ADS_SCOPE_SUBTREE
+        elif search_scope=="onelevel":
+            command.Properties("Searchscope").Value = ADQuery.ADS_SCOPE_ONELEVEL
+        elif search_scope=="base":
+            command.Properties("Searchscope").Value = ADQuery.ADS_SCOPE_BASE
+        else:
+            raise Exception("Unknown search_base %s, must be subtree, onelevel or base"
+                            %search_scope)
+                            
         command.CommandText = query
         self.__rs, self.__rc = command.Execute()
         self.__queried = True
