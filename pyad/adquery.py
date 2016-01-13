@@ -9,9 +9,9 @@ class ADQuery(ADBase):
     # Requires ADSI to use encryption for data
     # exchange over the network.
     ADS_USE_ENCRYPTION = 2
-    
+
     # ADS_SCOPEENUM enumeration. Documented at http://goo.gl/83G1S
-    
+
     # Searches the whole subtree, including all the
     # children and the base object itself.
     ADS_SCOPE_SUBTREE = 2
@@ -21,10 +21,10 @@ class ADQuery(ADBase):
     # Limits the search to the base object.
     # The result contains, at most, one object.
     ADS_SCOPE_BASE = 0
-    
+
     # the methodology for performing a command with credentials
     # and for forcing encryption can be found at http://goo.gl/GGCK5
-    
+
     def __init__(self, options={}):
         self.__adodb_conn = win32com.client.Dispatch("ADODB.Connection")
         if self.default_username and self.default_password:
@@ -38,32 +38,41 @@ class ADQuery(ADBase):
             self.__adodb_conn.Open("Provider=ADSDSOObject")
         else:
             self.__adodb_conn.Open("Provider=ADSDSOObject")
-            
+
         self.reset()
-    
+
     def reset(self):
         self.__rs = self.__rc = None
         self.__queried = False
 
     def execute_query(self, attributes=["distinguishedName"], where_clause=None,
-                    type="LDAP", base_dn=None, page_size=1000, options={}):
+                    type="LDAP", base_dn=None, page_size=1000,
+                    search_scope="subtree", options={}):
         assert type in ("LDAP", "GC")
         if not base_dn:
-            if type == "LDAP": 
+            if type == "LDAP":
                 base_dn = self._safe_default_domain
-            if type == "GC": 
+            if type == "GC":
                 base_dn = self._safe_default_forest
         query = "SELECT %s FROM '%s'" % (','.join(attributes),
                 pyadutils.generate_ads_path(base_dn, type,
                         self.default_ldap_server, self.default_ldap_port))
         if where_clause:
             query = ' '.join((query, 'WHERE', where_clause))
-        
+
         command = win32com.client.Dispatch("ADODB.Command")
         command.ActiveConnection = self.__adodb_conn
         command.Properties("Page Size").Value = page_size
-        command.Properties("Searchscope").Value = ADQuery.ADS_SCOPE_SUBTREE
-        
+        if search_scope == "subtree":
+            command.Properties("Searchscope").Value = ADQuery.ADS_SCOPE_SUBTREE
+        elif search_scope == "onelevel":
+            command.Properties("Searchscope").Value = ADQuery.ADS_SCOPE_ONELEVEL
+        elif search_scope == "base":
+            command.Properties("Searchscope").Value = ADQuery.ADS_SCOPE_BASE
+        else:
+            raise Exception("Unknown search_base %s, must be subtree, "\
+                            "onelevel or base" % search_scope)
+
         command.CommandText = query
         self.__rs, self.__rc = command.Execute()
         self.__queried = True
