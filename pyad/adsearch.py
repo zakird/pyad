@@ -1,5 +1,6 @@
-from adquery import *
-from adbase import * 
+from __future__ import absolute_import
+from .adquery import *
+from .adbase import * 
 
 _ad_query_obj = ADQuery()
 
