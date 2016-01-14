@@ -1,4 +1,10 @@
-from adbase import *
+from __future__ import division
+from __future__ import absolute_import
+from builtins import hex
+from builtins import chr
+from builtins import str
+from past.utils import old_div
+from .adbase import *
 
 def convert_error_code(error_code):
     """Convert error code from the format returned by pywin32 to the format that Microsoft documents everything in."""
@@ -13,7 +19,7 @@ def interpret_com_exception(excp, additional_info={}):
     # since L would never be in a hex code, we can safely just remove it. 
     d['error_code'] = hex(d['error_num']).rstrip('L')
     if d['error_code'][0:7] == '0x80005':
-        if d['error_num'] in GENERIC_ADSI_ERRORS.keys():
+        if d['error_num'] in list(GENERIC_ADSI_ERRORS.keys()):
             d['exception_type'] = 'known_generic_adsi_error'
             d['error_constant'] = GENERIC_ADSI_ERRORS[d['error_num']][0]
             d['message'] = ' '.join(GENERIC_ADSI_ERRORS[d['error_num']][1:3])
@@ -29,7 +35,7 @@ def interpret_com_exception(excp, additional_info={}):
         d['error_constant'] = None
         # returns information about error from winerror.h file... 
         d['message'] = win32api.FormatMessage(d['error_num']) 
-    elif d['error_num'] in GENERIC_COM_ERRORS.keys():
+    elif d['error_num'] in list(GENERIC_COM_ERRORS.keys()):
         d['exception_type'] = 'generic_com_error'
         d['error_constant'] = GENERIC_COM_ERRORS[d['error_num']][0]
         d['message'] = GENERIC_COM_ERRORS[d['error_num']][1]
@@ -61,8 +67,8 @@ def convert_datetime(adsi_time_com_obj):
     """Converts 64-bit integer COM object representing time into a python datetime object."""
     # credit goes to John Nielsen who documented this at
     # http://docs.activestate.com/activepython/2.6/pywin32/html/com/help/active_directory.html. 
-    return datetime.datetime.fromtimestamp((((long(adsi_time_com_obj.highpart) << 32)\
-        + long(adsi_time_com_obj.lowpart)) - 116444736000000000L)/10000000)
+    return datetime.datetime.fromtimestamp(old_div((((int(adsi_time_com_obj.highpart) << 32)\
+        + int(adsi_time_com_obj.lowpart)) - 116444736000000000),10000000))
         
 def convert_bigint(obj):
     # based on http://www.selfadsi.org/ads-attributes/user-usnChanged.htm
