@@ -1,4 +1,5 @@
-from pyadunittest import *
+from __future__ import absolute_import
+from .pyadunittest import *
 
 class TestADBase(ADTestCase):
     def setUp(self):
