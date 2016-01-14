@@ -1,4 +1,6 @@
-from adobject import *
+from __future__ import absolute_import
+from builtins import str
+from .adobject import *
 
 class ADComputer(ADObject):
     """Python class representing a computer object in Active Directory."""
