@@ -9,6 +9,12 @@ Requirements
 
 pyad requires pywin32, available at http://sourceforge.net/projects/pywin32.
 
+Alternatively,
+::
+    pip install pypiwin32
+
+works as well.
+
 
 Connecting to Active Directory
 ==============================

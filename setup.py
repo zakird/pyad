@@ -34,7 +34,6 @@ setup(
     ],
     install_requires=[
         'setuptools',
-        'pywin32',
         'future'
     ]
 )
