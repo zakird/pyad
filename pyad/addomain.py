@@ -1,4 +1,5 @@
-from adcontainer import *
+from __future__ import absolute_import
+from .adcontainer import *
 
 class ADDomain(ADContainer):
 

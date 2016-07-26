@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import object
 import sys
 import datetime
 import time
@@ -16,8 +19,8 @@ except ImportError:
     raise Exception("pywin32 library required. Download from http://sourceforge.net/projects/pywin32/")
 
 # Import constants and other common elements.
-from pyadconstants import *
-from pyadexceptions import *
+from .pyadconstants import *
+from .pyadexceptions import *
 
 _adsi_provider = win32com.client.Dispatch('ADsNameSpaces')
 
@@ -26,7 +29,7 @@ try:
     __default_domain_obj = _adsi_provider.GetObject('', "LDAP://rootDSE")
 except:
     # If there was an error, this this computer might not be on a domain.
-    print "WARN: unable to connect to default domain. Computer is likely not attached to an AD domain"
+    print("WARN: unable to connect to default domain. Computer is likely not attached to an AD domain")
     __default_domain_obj = None
     _default_detected_forest = None
     _default_detected_domain = None
@@ -92,5 +95,5 @@ class ADBase(object):
         raise Exception("Unable to detect default forest. Must specify search base.")
 
 def set_defaults(**kwargs):
-    for k, v in kwargs.iteritems():
+    for k, v in kwargs.items():
         setattr(ADBase, '_'.join(('default', k)), v)

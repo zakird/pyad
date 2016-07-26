@@ -1,5 +1,6 @@
-from adobject import *
-import pyadconstants
+from __future__ import absolute_import
+from .adobject import *
+from . import pyadconstants
 
 class ADGroup(ADObject):
 
@@ -13,12 +14,12 @@ class ADGroup(ADObject):
 
     def add_members(self, members):
         """Accepts a list of pyAD objects or a single pyAD object and adds as members to the group."""
-        members = map(lambda member: member.dn, pyadutils.generate_list(members))
+        members = [member.dn for member in pyadutils.generate_list(members)]
         return self.append_to_attribute('member', members)
 
     def remove_members(self, members):
         """Accepts a list of pyAD objects or a single pyAD object and removes these as members from the group."""
-        members = map(lambda member: member.dn, pyadutils.generate_list(members))
+        members = [member.dn for member in pyadutils.generate_list(members)]
         return self.remove_from_attribute('member', members)
 
     def remove_all_members(self):

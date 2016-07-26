@@ -1,6 +1,7 @@
-from adobject import *
-from pyadexceptions import InvalidObjectException, invalidResults
-import aduser, adcomputer, addomain, addomain, adgroup, adobject, pyadconstants, adcontainer
+from __future__ import absolute_import
+from .adobject import *
+from .pyadexceptions import InvalidObjectException, invalidResults
+from . import aduser, adcomputer, addomain, addomain, adgroup, adobject, pyadconstants, adcontainer
 
 def from_cn(common_name, search_base=None, options={}):
     Escape = {"\\":"\\5C","*":"\\2A","(":"\\28",")":"\\29"}

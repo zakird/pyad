@@ -1,8 +1,9 @@
-from adobject import *
-from aduser import ADUser
-from adcomputer import ADComputer
-from adgroup import ADGroup
-import pyadconstants
+from __future__ import absolute_import
+from .adobject import *
+from .aduser import ADUser
+from .adcomputer import ADComputer
+from .adgroup import ADGroup
+from . import pyadconstants
 
 class ADContainer(ADObject):
     def get_children_iter(self, recursive=False, filter_=None):
@@ -42,7 +43,7 @@ class ADContainer(ADObject):
                 pyadobj.set_password(password)
             pyadobj.update_attributes(optional_attributes)
             return pyadobj
-        except pywintypes.com_error, e: 
+        except pywintypes.com_error as e: 
             pyadutils.pass_up_com_exception(e)
 
     def create_group(self, name, security_enabled=True, scope='GLOBAL', optional_attributes={}):
@@ -58,7 +59,7 @@ class ADContainer(ADObject):
             pyadobj = ADGroup.from_com_object(obj)
             pyadobj.update_attributes(optional_attributes)
             return pyadobj
-        except pywintypes.com_error, e: 
+        except pywintypes.com_error as e: 
             pyadutils.pass_up_com_exception(e)
 
     def create_container(self, name, optional_attributes={}):
@@ -69,7 +70,7 @@ class ADContainer(ADObject):
             pyadobj = ADContainer.from_com_object(obj)
             pyadobj.update_attributes(optional_attributes)
             return pyadobj
-        except pywintypes.com_error, e: 
+        except pywintypes.com_error as e: 
             pyadutils.pass_up_com_exception(e)
 
     def create_computer(self, name, enable=True,optional_attributes={}):
@@ -83,7 +84,7 @@ class ADContainer(ADObject):
                 pyadobj.enable()
             pyadobj.update_attributes(optional_attributes)
             return pyadobj
-        except pywintypes.com_error, e: 
+        except pywintypes.com_error as e: 
             pyadutils.pass_up_com_exception(e)
 
     def remove_child(self, child):

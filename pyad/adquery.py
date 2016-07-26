@@ -1,5 +1,6 @@
-from adbase import *
-import pyadutils
+from __future__ import absolute_import
+from .adbase import *
+from . import pyadutils
 
 class ADQuery(ADBase):
     # Requests secure authentication. When this flag is set,

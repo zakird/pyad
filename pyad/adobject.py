@@ -1,6 +1,9 @@
-import adsearch
-import pyadutils
-from adbase import *
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from . import adsearch
+from . import pyadutils
+from .adbase import *
 
 class ADObject(ADBase):
     """Python object that represents any active directory object."""
@@ -286,7 +289,7 @@ class ADObject(ADBase):
                     return list(value)
             # this just means that the attribute doesn't have a value which
             # we imply means null instead of throwing an error..
-            except pywintypes.com_error, excpt:
+            except pywintypes.com_error as excpt:
                 if pyadutils.interpret_com_exception(excpt)['error_constant'] == 'E_ADS_PROPERTY_NOT_FOUND':
                     return [] if always_return_list else None
                 else:
@@ -298,7 +301,7 @@ class ADObject(ADBase):
         else:
             try:
                 self._ldap_adsi_obj.putEx(action, attribute, new_value)
-            except pywintypes.com_error, excpt:
+            except pywintypes.com_error as excpt:
                 pyadutils.pass_up_com_exception(excpt)
 
     def clear_attribute(self, attribute):
@@ -321,7 +324,7 @@ class ADObject(ADBase):
     def update_attributes(self, attribute_value_dict):
         """Updates multiple attributes in a single transaction
         attribute_value_dict should contain a dictionary of values keyed by attribute name"""
-        for k, v in attribute_value_dict.iteritems():
+        for k, v in attribute_value_dict.items():
             self.update_attribute(k,v,True)
         self._flush()
 
@@ -349,7 +352,7 @@ class ADObject(ADBase):
         http://msdn.microsoft.com/en-us/library/aa772300.aspx."""
         d = {}
         auc = self.get_attribute('UserAccountControl',False)
-        for key, value in ADS_USER_FLAG.iteritems():
+        for key, value in ADS_USER_FLAG.items():
             d[key] = True if auc & value == value else False
         return d
 
@@ -359,7 +362,7 @@ class ADObject(ADBase):
         UserFlag must be a value from ADS_USER_FLAG dictionary keys.
         More information can be found at http://msdn.microsoft.com/en-us/library/aa772300.aspx.
         newValue accepts boolean values"""
-        if userFlag not in ADS_USER_FLAG.keys():
+        if userFlag not in list(ADS_USER_FLAG.keys()):
             raise InvalidValue("userFlag",userFlag,list(ADS_USER_FLAG.keys()))
         elif newValue not in (True, False):
             raise InvalidValue("newValue",newValue,[True,False])
@@ -383,7 +386,7 @@ class ADObject(ADBase):
             if self._ldap_adsi_obj.AccountDisabled == False:
                 self._ldap_adsi_obj.AccountDisabled = True
                 self._flush()
-        except pywintypes.com_error, excpt:
+        except pywintypes.com_error as excpt:
             pyadutils.pass_up_com_exception(excpt)
 
     def enable(self):
@@ -392,7 +395,7 @@ class ADObject(ADBase):
             if self._ldap_adsi_obj.AccountDisabled == True:
                 self._ldap_adsi_obj.AccountDisabled = False
                 self._flush()
-        except pywintypes.com_error, excpt:
+        except pywintypes.com_error as excpt:
             pyadutils.pass_up_com_exception(excpt)
 
     def _get_password_last_set(self):
@@ -416,7 +419,7 @@ class ADObject(ADBase):
             new_path = self.default_ldap_protocol + '://' + self.dn
             new_ou_object._ldap_adsi_obj.MoveHere(new_path, self.prefixed_cn)
             new_ou_object._flush()
-        except pywintypes.com_error, excpt:
+        except pywintypes.com_error as excpt:
             pyadutils.pass_up_com_exception(excpt)
         new_dn = ','.join((self.prefixed_cn, new_ou_object.dn))
         time.sleep(.5)
@@ -441,7 +444,7 @@ class ADObject(ADBase):
             new_path = self.default_ldap_protocol+'://' + self.dn
             parent._ldap_adsi_obj.MoveHere(new_path, pcn)
             parent._flush()
-        except pywintypes.com_error, excpt:
+        except pywintypes.com_error as excpt:
             pyadutils.pass_up_com_exception(excpt)
         new_dn = ','.join((pcn, parent.dn))
         time.sleep(.5)
@@ -500,7 +503,7 @@ class ADObject(ADBase):
                             text = doc.createTextNode(value.encode("latin-1", 'replace'))
                         node.appendChild(text)
                     except:
-                        print 'attribute: %s not xml-able' % attribute
+                        print('attribute: %s not xml-able' % attribute)
                 else:
                     node.setAttribute("type", "multiValued")
                     ok_elem = False
@@ -514,12 +517,12 @@ class ADObject(ADBase):
                                 node.appendChild(valnode)
                                 ok_elem=True
                     except:
-                        print 'attribute: %s not xml-able' % attribute
+                        print('attribute: %s not xml-able' % attribute)
                 if ok_elem: adobj_xml_doc.appendChild(node)
         return doc.toxml(encoding="UTF-8")
 
     def adjust_pyad_type(self):
-        if self.type in self._py_ad_object_mappings.keys():
+        if self.type in list(self._py_ad_object_mappings.keys()):
             self.__class__ = self._py_ad_object_mappings[self.type]
 
     def __get_parent_container(self):
