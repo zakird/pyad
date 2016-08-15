@@ -179,8 +179,7 @@ class ADObject(ADBase):
 
     def __repr__(self):
         u = self.__unicode__()
-        s = u.encode("mbcs")
-        return s
+        return u
 
     def __cmp__(self, other):
         # it doesn't make sense why you'd ever have to decide
