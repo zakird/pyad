@@ -82,8 +82,8 @@ def convert_guid(guid_object):
     return pywintypes.IID(guid_object, True)
 
 def convert_sid(sid_object):
-    return pywintypes.SID(sid_object)
-
+    return pywintypes.SID(bytes(sid_object))
+    
 def generate_list(input):
     if type(input) is list:
         return input
