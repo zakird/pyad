@@ -14,8 +14,6 @@ def from_cn(common_name, search_base=None, options={}):
         return None
 
 def from_dn(distinguished_name, options={}):
-    Escape = {"\\":"\\5C","*":"\\2A","(":"\\28",")":"\\29"}
-    distinguished_name = "".join([Escape.get(char, char) for char in distinguished_name])
     try:
         q = ADObject.from_dn(distinguished_name,options)
         q.adjust_pyad_type()
