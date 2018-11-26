@@ -67,8 +67,19 @@ def convert_datetime(adsi_time_com_obj):
     """Converts 64-bit integer COM object representing time into a python datetime object."""
     # credit goes to John Nielsen who documented this at
     # http://docs.activestate.com/activepython/2.6/pywin32/html/com/help/active_directory.html. 
-    return datetime.datetime.fromtimestamp(old_div((((int(adsi_time_com_obj.highpart) << 32)\
-        + int(adsi_time_com_obj.lowpart)) - 116444736000000000),10000000))
+
+    high_part = int(adsi_time_com_obj.highpart) << 32
+    low_part = int(adsi_time_com_obj.lowpart)
+    date_value = old_div(((high_part + low_part) - 116444736000000000),10000000)
+    #
+    # The "fromtimestamp" function in datetime cannot take a
+    # negative value, so if the resulting date value is negative,
+    # explicitly set it to 18000. This will result in the date
+    # 1970-01-01 00:00:00 being returned from this function
+    #
+    if date_value < 0:
+        date_value = 18000
+    return datetime.datetime.fromtimestamp(date_value)
         
 def convert_bigint(obj):
     # based on http://www.selfadsi.org/ads-attributes/user-usnChanged.htm
