@@ -39,5 +39,9 @@ class ADUser(ADObject):
         """Sets the expiration date of the password to the given value"""
         self._ldap_adsi_obj.AccountExpirationDate = dt
         self._flush()
+        
+    def unlock(self):
+        """Unlock the user's account"""
+        self.update_attribute('lockoutTime',0)
             
 ADObject._py_ad_object_mappings['user'] = ADUser

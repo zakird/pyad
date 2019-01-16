@@ -352,7 +352,7 @@ class ADObject(ADBase):
         d = {}
         auc = self.get_attribute('UserAccountControl',False)
         for key, value in ADS_USER_FLAG.items():
-            d[key] = True if auc & value == value else False
+            d[key] = auc & value == value
         return d
 
     def set_user_account_control_setting(self, userFlag, newValue):
