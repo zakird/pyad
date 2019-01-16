@@ -15,18 +15,18 @@ class ADObject(ADBase):
     _mandatory_attributes = None
     _optional_attributes = None
     _py_ad_object_mappings = {}
-    
+
     def __set_adsi_obj(self):
         """Internal method that creates the connection to the backend ADSI object."""
-    
+
         if self.default_username and self.default_password:
             # from http://msdn.microsoft.com/en-us/library/windows/desktop/aa706065(v=vs.85).aspx
             # With the LDAP provider for Active Directory, you may pass in
             # lpszUserName as one of the following strings:
-            # (1) The name of a user account, such as "jeffsmith". To use a user name 
-            # by itself, you must set only the ADS_SECURE_AUTHENTICATION flag 
+            # (1) The name of a user account, such as "jeffsmith". To use a user name
+            # by itself, you must set only the ADS_SECURE_AUTHENTICATION flag
             # in the lnReserved parameter.
-            # (2) The user path from a previous version of Windows NT, such 
+            # (2) The user path from a previous version of Windows NT, such
             # as "Fabrikam\jeffsmith".
             # (3) Distinguished Name, such as "CN=Jeff Smith, OU=Sales,
             # DC=Fabrikam,DC=Com". To use a DN, the lnReserved parameter
@@ -34,7 +34,7 @@ class ADObject(ADBase):
             # (4) User Principal Name (UPN), such as "jeffsmith@Fabrikam.com".
             # To use a UPN, you must assign the appropriate UPN value for the
             # userPrincipalName attribute of the target user object.
-            
+
             # In order to be consistent (and because troubleshooting this
             # is horrid), we're just going to force user name to be of form
             # (1) or (4) and document it. Offhand, I'm not seeing any
@@ -46,7 +46,7 @@ class ADObject(ADBase):
             else:
                 # I'm choosing to force encryption of the login credentials.
                 # This does not require SSL to be configured, so I believe this
-                # should work for everyone. If not, we can change later. 
+                # should work for everyone. If not, we can change later.
                 flag = ADS_AUTHENTICATION_TYPE['ADS_SECURE_AUTHENTICATION']
                 if self.default_ssl:
                     flag = flag | ADS_AUTHENTICATION_TYPE['ADS_USE_ENCRYPTION']
@@ -55,14 +55,14 @@ class ADObject(ADBase):
                     self.default_username,
                     self.default_password,
                     flag)
-            
+
         elif self.default_ssl:
             raise Exception("Using SSL without specifying credentials is currently unsupported due to what appears to be a bug in pywin32.")
             # from: http://msdn.microsoft.com/en-us/library/windows/desktop/aa772247(v=vs.85).aspx
             # If ADS_USE_SSL is not combined with the ADS_SECURE_AUTHENTICATION
             # flag and the supplied credentials are NULL, the bind will be
-            # performed anonymously. If ADS_USE_SSL is combined with the 
-            # ADS_SECURE_AUTHENTICATION flag and the supplied credentials 
+            # performed anonymously. If ADS_USE_SSL is combined with the
+            # ADS_SECURE_AUTHENTICATION flag and the supplied credentials
             # are NULL, then the credentials of the calling thread are used.
             flag = ADS_AUTHENTICATION_TYPE['ADS_SECURE_AUTHENTICATION'] | \
                             ADS_AUTHENTICATION_TYPE['ADS_USE_ENCRYPTION']
@@ -74,7 +74,7 @@ class ADObject(ADBase):
                             flag)
         else:
             self._ldap_adsi_obj = self.adsi_provider.getObject('', self.__ads_path)
-    
+
     def __init__(self, distinguished_name=None, adsi_ldap_com_object=None, options={}):
         if adsi_ldap_com_object:
             self._ldap_adsi_obj = adsi_ldap_com_object
@@ -95,7 +95,7 @@ class ADObject(ADBase):
         self.__object_guid = self.get_attribute('objectGUID', False)
         if self.__object_guid is not None:
             self.__object_guid = pyadutils.convert_guid(self.__object_guid)
-        # Set pyAD Object Type        
+        # Set pyAD Object Type
         occn = self.get_attribute('objectCategory',False)
         if occn:
             # pull out CN from DN
@@ -141,7 +141,7 @@ class ADObject(ADBase):
 
     def __get_prefixed_cn(self):
         prefix = None
-        if self.type == 'organizationalUnit': 
+        if self.type == 'organizationalUnit':
             prefix = 'ou'
         elif self.type == "domain":
             prefix = 'dc'
@@ -204,7 +204,7 @@ class ADObject(ADBase):
     def _flush(self):
         "Commits any changes to the AD object."
         return self._ldap_adsi_obj.SetInfo()
-    
+
     def __set_gc_adsi_obj(self):
         path = pyadutils.generate_ads_path(
                         self.dn,
@@ -224,7 +224,7 @@ class ADObject(ADBase):
                     flag)
         else:
             self._gc_adsi_obj = self.adsi_provider.GetObject('', path)
-    
+
     def _init_global_catalog_object(self, force=False, options={}):
         """Initializes the global catalog ADSI com object to be
         used when querying the global catalog instead of the domain directly."""
@@ -352,7 +352,7 @@ class ADObject(ADBase):
         d = {}
         auc = self.get_attribute('UserAccountControl',False)
         for key, value in ADS_USER_FLAG.items():
-            d[key] = True if auc & value == value else False
+            d[key] = auc & value == value
         return d
 
     def set_user_account_control_setting(self, userFlag, newValue):
@@ -401,15 +401,15 @@ class ADObject(ADBase):
         # http://www.microsoft.com/technet/scriptcenter/topics/win2003/lastlogon.mspx
         # kudos to http://docs.activestate.com/activepython/2.6/pywin32/html/com/help/active_directory.html
         return pyadutils.convert_datetime(self.get_attribute('pwdLastSet', False))
-        
+
     def get_last_login(self):
         """Returns datetime object of when user last login on the connected domain controller."""
         return pyadutils.convert_datetime(self.get_attribute('lastLogonTimestamp', False))
 
     def get_uSNChanged(self):
         """Returns uSNChanged as a single integer from the current domain controller"""
-        return pyadutils.convert_bigint(self.get_attribute('uSNChanged', False)) 
-        
+        return pyadutils.convert_bigint(self.get_attribute('uSNChanged', False))
+
     def move(self, new_ou_object):
         """Moves the object to a new organizationalUnit.
 
