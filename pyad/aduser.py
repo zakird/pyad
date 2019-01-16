@@ -41,11 +41,7 @@ class ADUser(ADObject):
         self._flush()
 
     def unlock(self):
-        """Unlock the user's account"""
-        self.update_attribute('lockoutTime',0)
-
-    def lock(self,lockout_time=-1):
-        """Lock the user's account"""
-        self.update_attribute('lockoutTime',lockout_time)
+    """Unlock the user's account"""
+    self.update_attribute('lockoutTime',0)
 
 ADObject._py_ad_object_mappings['user'] = ADUser
