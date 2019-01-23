@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from .adobject import *
 from .adsearch import _ad_query_obj
+#from .addomain import ADDomain
 
 class ADUser(ADObject):
     
@@ -34,6 +35,24 @@ class ADUser(ADObject):
     def get_password_last_set(self): 
         """Returns datetime object of when user last reset their password."""
         return self._get_password_last_set()
+    
+    def get_max_pwd_age(self):
+        return pyadutils.convert_timespan(self.get_domain().maxPwdAge)
+        
+    def get_expiration(self):
+        """Gets the expiration date of the password as a datetime object.
+        The _ldap_adsi_obj.AccountExpirationDate can be inaccurate and
+        return the UNIX Epoch instead of the true expiration date."""
+        uac_settings = self.get_user_account_control_settings()
+        if any(uac_settings[flag] for flag in ["SMARTCARD_REQUIRED",
+         "DONT_EXPIRE_PASSWD", "WORKSTATION_TRUST_ACCOUNT",
+         "SERVER_TRUST_ACCOUNT", "INTERDOMAIN_TRUST_ACCOUNT"]):
+            return None
+        elif self.get_attribute('pwdLastSet', False) is None:
+            return datetime.datetime(1970,1,1)
+        else:
+            return self.get_password_last_set() + self.get_max_pwd_age()
+            
         
     def set_expiration(self, dt):
         """Sets the expiration date of the password to the given value"""
