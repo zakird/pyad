@@ -5,6 +5,7 @@ from builtins import chr
 from builtins import str
 from past.utils import old_div
 from .adbase import *
+from datetime import timedelta
 
 def convert_error_code(error_code):
     """Convert error code from the format returned by pywin32 to the format that Microsoft documents everything in."""
@@ -87,7 +88,11 @@ def convert_bigint(obj):
     if l < 0:
         h += 1
     return (h << 32) + l
-
+    
+def convert_timespan(obj):
+    """Converts COM object representing timespan to a python timespan object."""
+    as_seconds = abs(convert_bigint(obj))/10000000 #number of 100 nanoseconds in a second
+    return timedelta(seconds=as_seconds)
 
 def convert_guid(guid_object):
     return pywintypes.IID(guid_object, True)
