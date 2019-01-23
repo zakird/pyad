@@ -90,6 +90,7 @@ def convert_bigint(obj):
     return (h << 32) + l
     
 def convert_timespan(obj):
+    """Converts COM object representing timespan to a python timespan object."""
     as_seconds = abs(convert_bigint(obj))/10000000 #number of 100 nanoseconds in a second
     return timedelta(seconds=as_seconds)
 

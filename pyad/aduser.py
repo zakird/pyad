@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from .adobject import *
 from .adsearch import _ad_query_obj
-#from .addomain import ADDomain
+import datetime
 
 class ADUser(ADObject):
     
@@ -37,6 +37,7 @@ class ADUser(ADObject):
         return self._get_password_last_set()
     
     def get_max_pwd_age(self):
+        """Returns timespan object representing the max password age on a user's domain"""
         return pyadutils.convert_timespan(self.get_domain().maxPwdAge)
         
     def get_expiration(self):
@@ -53,11 +54,20 @@ class ADUser(ADObject):
         else:
             return self.get_password_last_set() + self.get_max_pwd_age()
             
+            
         
     def set_expiration(self, dt):
         """Sets the expiration date of the password to the given value"""
         self._ldap_adsi_obj.AccountExpirationDate = dt
         self._flush()
+        
+    def get_password_expired(self):
+        """Returns a bool representing whether the password has expired.
+        The passwordexpired property will often return True even if not expired."""
+        expiration_date = self.get_expiration()
+        if expiration_date is None:
+            return False
+        return expiration_date < datetime.datetime.now()
         
     def unlock(self):
         """Unlock the user's account"""
