@@ -94,7 +94,6 @@ def convert_timespan(obj):
     as_seconds = abs(convert_bigint(obj))/10000000 #number of 100 nanoseconds in a second
     return timedelta(seconds=as_seconds)
 
-
 def convert_guid(guid_object):
     return pywintypes.IID(guid_object, True)
 

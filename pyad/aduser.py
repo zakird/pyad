@@ -54,8 +54,6 @@ class ADUser(ADObject):
         else:
             return self.get_password_last_set() + self.get_max_pwd_age()
             
-            
-        
     def set_expiration(self, dt):
         """Sets the expiration date of the password to the given value"""
         self._ldap_adsi_obj.AccountExpirationDate = dt
