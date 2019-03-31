@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyad.adcontainer &mdash; Python Active Directory Tools 0.5.03 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.5.03',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Python Active Directory Tools 0.5.03 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Python Active Directory Tools 0.5.03 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyad.adcontainer</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">adobject</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">aduser</span> <span class="kn">import</span> <span class="n">ADUser</span>
+<span class="kn">from</span> <span class="nn">adcomputer</span> <span class="kn">import</span> <span class="n">ADComputer</span>
+<span class="kn">from</span> <span class="nn">adgroup</span> <span class="kn">import</span> <span class="n">ADGroup</span>
+<span class="kn">import</span> <span class="nn">pyadconstants</span>
+
+<div class="viewcode-block" id="ADContainer"><a class="viewcode-back" href="../../objects.html#pyad.adcontainer.ADContainer">[docs]</a><span class="k">class</span> <span class="nc">ADContainer</span><span class="p">(</span><span class="n">ADObject</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_children_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">filter_</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">com_object</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="p">:</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">ADObject</span><span class="o">.</span><span class="n">from_com_object</span><span class="p">(</span><span class="n">com_object</span><span class="p">)</span>
+            <span class="n">q</span><span class="o">.</span><span class="n">adjust_pyad_type</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s">&#39;organizationalUnit&#39;</span> <span class="ow">and</span> <span class="n">recursive</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">q</span><span class="o">.</span><span class="n">get_children_iter</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="n">recursive</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">filter_</span> <span class="ow">or</span> <span class="n">c</span><span class="o">.</span><span class="n">__class__</span> <span class="ow">in</span> <span class="n">filter_</span><span class="p">:</span> 
+                        <span class="k">yield</span> <span class="n">c</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">filter_</span> <span class="ow">or</span> <span class="n">q</span><span class="o">.</span><span class="n">__class__</span> <span class="ow">in</span> <span class="n">filter_</span><span class="p">:</span> 
+                <span class="k">yield</span> <span class="n">q</span>
+    
+<div class="viewcode-block" id="ADContainer.get_children"><a class="viewcode-back" href="../../objects.html#pyad.adcontainer.ADContainer.get_children">[docs]</a>    <span class="k">def</span> <span class="nf">get_children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">filter_</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span> 
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_children_iter</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="n">recursive</span><span class="p">,</span> <span class="n">filter_</span><span class="o">=</span><span class="n">filter_</span><span class="p">))</span>
+    </div>
+    <span class="k">def</span> <span class="nf">__create_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="s">&#39;ou&#39;</span> <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="s">&#39;organizationalUnit&#39;</span> <span class="k">else</span> <span class="s">&#39;cn&#39;</span>
+        <span class="n">prefixed_name</span> <span class="o">=</span> <span class="s">&#39;=&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">prefix</span><span class="p">,</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">Create</span><span class="p">(</span><span class="n">type_</span><span class="p">,</span> <span class="n">prefixed_name</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="ADContainer.create_user"><a class="viewcode-back" href="../../objects.html#pyad.adcontainer.ADContainer.create_user">[docs]</a>    <span class="k">def</span> <span class="nf">create_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">upn_suffix</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">enable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">optional_attributes</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">upn_suffix</span><span class="p">:</span>
+                <span class="n">upn_suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_domain</span><span class="p">()</span><span class="o">.</span><span class="n">get_default_upn</span><span class="p">()</span>
+            <span class="n">upn</span> <span class="o">=</span> <span class="s">&#39;@&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">upn_suffix</span><span class="p">))</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__create_object</span><span class="p">(</span><span class="s">&#39;user&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">Put</span><span class="p">(</span><span class="s">&#39;sAMAccountName&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">Put</span><span class="p">(</span><span class="s">&#39;userPrincipalName&#39;</span><span class="p">,</span> <span class="n">upn</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">SetInfo</span><span class="p">()</span>
+            <span class="n">pyadobj</span> <span class="o">=</span> <span class="n">ADUser</span><span class="o">.</span><span class="n">from_com_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">enable</span><span class="p">:</span>
+                <span class="n">pyadobj</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">password</span><span class="p">:</span>
+                <span class="n">pyadobj</span><span class="o">.</span><span class="n">set_password</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+            <span class="n">pyadobj</span><span class="o">.</span><span class="n">update_attributes</span><span class="p">(</span><span class="n">optional_attributes</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pyadobj</span>
+        <span class="k">except</span> <span class="n">pywintypes</span><span class="o">.</span><span class="n">com_error</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> 
+            <span class="n">pyadutils</span><span class="o">.</span><span class="n">pass_up_com_exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADContainer.create_group"><a class="viewcode-back" href="../../objects.html#pyad.adcontainer.ADContainer.create_group">[docs]</a>    <span class="k">def</span> <span class="nf">create_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">security_enabled</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s">&#39;GLOBAL&#39;</span><span class="p">,</span> <span class="n">optional_attributes</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__create_object</span><span class="p">(</span><span class="s">&#39;group&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">Put</span><span class="p">(</span><span class="s">&#39;sAMAccountName&#39;</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">pyadconstants</span><span class="o">.</span><span class="n">ADS_GROUP_TYPE</span><span class="p">[</span><span class="n">scope</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">security_enabled</span><span class="p">:</span> 
+                <span class="n">val</span> <span class="o">=</span> <span class="n">val</span> <span class="o">|</span> <span class="n">pyadconstants</span><span class="o">.</span><span class="n">ADS_GROUP_TYPE</span><span class="p">[</span><span class="s">&#39;SECURITY_ENABLED&#39;</span><span class="p">]</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">Put</span><span class="p">(</span><span class="s">&#39;groupType&#39;</span><span class="p">,</span><span class="n">val</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">SetInfo</span><span class="p">()</span>
+            <span class="n">pyadobj</span> <span class="o">=</span> <span class="n">ADGroup</span><span class="o">.</span><span class="n">from_com_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="n">pyadobj</span><span class="o">.</span><span class="n">update_attributes</span><span class="p">(</span><span class="n">optional_attributes</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pyadobj</span>
+        <span class="k">except</span> <span class="n">pywintypes</span><span class="o">.</span><span class="n">com_error</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> 
+            <span class="n">pyadutils</span><span class="o">.</span><span class="n">pass_up_com_exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADContainer.create_container"><a class="viewcode-back" href="../../objects.html#pyad.adcontainer.ADContainer.create_container">[docs]</a>    <span class="k">def</span> <span class="nf">create_container</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">optional_attributes</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__create_object</span><span class="p">(</span><span class="s">&#39;organizationalUnit&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">SetInfo</span><span class="p">()</span>
+            <span class="n">pyadobj</span> <span class="o">=</span> <span class="n">ADContainer</span><span class="o">.</span><span class="n">from_com_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="n">pyadobj</span><span class="o">.</span><span class="n">update_attributes</span><span class="p">(</span><span class="n">optional_attributes</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pyadobj</span>
+        <span class="k">except</span> <span class="n">pywintypes</span><span class="o">.</span><span class="n">com_error</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> 
+            <span class="n">pyadutils</span><span class="o">.</span><span class="n">pass_up_com_exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADContainer.create_computer"><a class="viewcode-back" href="../../objects.html#pyad.adcontainer.ADContainer.create_computer">[docs]</a>    <span class="k">def</span> <span class="nf">create_computer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">enable</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">optional_attributes</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__create_object</span><span class="p">(</span><span class="s">&#39;computer&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">Put</span><span class="p">(</span><span class="s">&#39;sAMAccountName&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">SetInfo</span><span class="p">()</span>
+            <span class="n">pyadobj</span> <span class="o">=</span> <span class="n">ADComputer</span><span class="o">.</span><span class="n">from_com_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">enable</span><span class="p">:</span>
+                <span class="n">pyadobj</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+            <span class="n">pyadobj</span><span class="o">.</span><span class="n">update_attributes</span><span class="p">(</span><span class="n">optional_attributes</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pyadobj</span>
+        <span class="k">except</span> <span class="n">pywintypes</span><span class="o">.</span><span class="n">com_error</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> 
+            <span class="n">pyadutils</span><span class="o">.</span><span class="n">pass_up_com_exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADContainer.remove_child"><a class="viewcode-back" href="../../objects.html#pyad.adcontainer.ADContainer.remove_child">[docs]</a>    <span class="k">def</span> <span class="nf">remove_child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">Delete</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">prefixed_cn</span><span class="p">)</span>
+        </div></div>
+<span class="n">ADObject</span><span class="o">.</span><span class="n">_py_ad_object_mappings</span><span class="p">[</span><span class="s">&#39;organizationalUnit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ADContainer</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Python Active Directory Tools 0.5.03 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Zakir Durumeric.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4fe3a2a4613f5d2d5600005d');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+  </body>
+</html>
