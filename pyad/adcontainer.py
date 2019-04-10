@@ -77,7 +77,11 @@ class ADContainer(ADObject):
         """Create a new computer object in the container"""
         try:
             obj = self.__create_object('computer', name)
-            obj.Put('sAMAccountName', name)
+            obj.Put('sAMAccountName', name + '$')
+            if enable:
+                obj.Put('userAccountControl', 4128)
+            else:
+                obj.Put('userAccountControl', 4130)
             obj.SetInfo()
             pyadobj = ADComputer.from_com_object(obj)
             if enable:

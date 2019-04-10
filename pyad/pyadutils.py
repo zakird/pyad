@@ -3,7 +3,6 @@ from __future__ import absolute_import
 from builtins import hex
 from builtins import chr
 from builtins import str
-from past.utils import old_div
 from .adbase import *
 from datetime import timedelta
 
@@ -71,7 +70,7 @@ def convert_datetime(adsi_time_com_obj):
 
     high_part = int(adsi_time_com_obj.highpart) << 32
     low_part = int(adsi_time_com_obj.lowpart)
-    date_value = old_div(((high_part + low_part) - 116444736000000000),10000000)
+    date_value = ((high_part + low_part) - 116444736000000000) // 10000000
     #
     # The "fromtimestamp" function in datetime cannot take a
     # negative value, so if the resulting date value is negative,

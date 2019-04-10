@@ -1,0 +1,650 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyad.adobject &mdash; Python Active Directory Tools 0.5.03 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.5.03',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Python Active Directory Tools 0.5.03 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Python Active Directory Tools 0.5.03 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyad.adobject</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">adsearch</span>
+<span class="kn">import</span> <span class="nn">pyadutils</span>
+<span class="kn">from</span> <span class="nn">adbase</span> <span class="kn">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="ADObject"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject">[docs]</a><span class="k">class</span> <span class="nc">ADObject</span><span class="p">(</span><span class="n">ADBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Python object that represents any active directory object.&quot;&quot;&quot;</span>
+
+    <span class="n">_ldap_adsi_obj</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">_gc_adsi_obj</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">_schema_adsi_obj</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">_domain_pyad_obj</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">_mandatory_attributes</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">_optional_attributes</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">_py_ad_object_mappings</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="k">def</span> <span class="nf">__set_adsi_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distinguished_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Internal method that creates the connection to the backend ADSI object.&quot;&quot;&quot;</span>
+    
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_username</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_password</span><span class="p">:</span>
+            <span class="c"># from http://msdn.microsoft.com/en-us/library/windows/desktop/aa706065(v=vs.85).aspx</span>
+            <span class="c"># With the LDAP provider for Active Directory, you may pass in</span>
+            <span class="c"># lpszUserName as one of the following strings:</span>
+            <span class="c"># (1) The name of a user account, such as &quot;jeffsmith&quot;. To use a user name </span>
+            <span class="c"># by itself, you must set only the ADS_SECURE_AUTHENTICATION flag </span>
+            <span class="c"># in the lnReserved parameter.</span>
+            <span class="c"># (2) The user path from a previous version of Windows NT, such </span>
+            <span class="c"># as &quot;Fabrikam\jeffsmith&quot;.</span>
+            <span class="c"># (3) Distinguished Name, such as &quot;CN=Jeff Smith, OU=Sales,</span>
+            <span class="c"># DC=Fabrikam,DC=Com&quot;. To use a DN, the lnReserved parameter</span>
+            <span class="c"># must be zero or it must include the ADS_USE_SSL flag</span>
+            <span class="c"># (4) User Principal Name (UPN), such as &quot;jeffsmith@Fabrikam.com&quot;.</span>
+            <span class="c"># To use a UPN, you must assign the appropriate UPN value for the</span>
+            <span class="c"># userPrincipalName attribute of the target user object.</span>
+            
+            <span class="c"># In order to be consistent (and because troubleshooting this</span>
+            <span class="c"># is horrid), we&#39;re just going to force user name to be of form</span>
+            <span class="c"># (1) or (4) and document it. Offhand, I&#39;m not seeing any</span>
+            <span class="c"># use cases where (3) would allow something not possible in</span>
+            <span class="c"># the combinations of options (1), or (4).</span>
+            <span class="n">_ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsi_provider</span><span class="o">.</span><span class="n">getObject</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="s">&quot;LDAP:&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_authentication_flag</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">flag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_authentication_flag</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c"># I&#39;m choosing to force encryption of the login credentials.</span>
+                <span class="c"># This does not require SSL to be configured, so I believe this</span>
+                <span class="c"># should work for everyone. If not, we can change later. </span>
+                <span class="n">flag</span> <span class="o">=</span> <span class="n">ADS_AUTHENTICATION_TYPE</span><span class="p">[</span><span class="s">&#39;ADS_SECURE_AUTHENTICATION&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_ssl</span><span class="p">:</span>
+                    <span class="n">flag</span> <span class="o">=</span> <span class="n">flag</span> <span class="o">|</span> <span class="n">ADS_AUTHENTICATION_TYPE</span><span class="p">[</span><span class="s">&#39;ADS_USE_ENCRYPTION&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span> <span class="o">=</span> <span class="n">_ds</span><span class="o">.</span><span class="n">OpenDSObject</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__ads_path</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">default_username</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">default_password</span><span class="p">,</span>
+                    <span class="n">flag</span><span class="p">)</span>
+            
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_ssl</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Using SSL without specifying credentials is currently unsupported due to what appears to be a bug in pywin32.&quot;</span><span class="p">)</span>
+            <span class="c"># from: http://msdn.microsoft.com/en-us/library/windows/desktop/aa772247(v=vs.85).aspx</span>
+            <span class="c"># If ADS_USE_SSL is not combined with the ADS_SECURE_AUTHENTICATION</span>
+            <span class="c"># flag and the supplied credentials are NULL, the bind will be</span>
+            <span class="c"># performed anonymously. If ADS_USE_SSL is combined with the </span>
+            <span class="c"># ADS_SECURE_AUTHENTICATION flag and the supplied credentials </span>
+            <span class="c"># are NULL, then the credentials of the calling thread are used.</span>
+            <span class="n">flag</span> <span class="o">=</span> <span class="n">ADS_AUTHENTICATION_TYPE</span><span class="p">[</span><span class="s">&#39;ADS_SECURE_AUTHENTICATION&#39;</span><span class="p">]</span> <span class="o">|</span> \
+                            <span class="n">ADS_AUTHENTICATION_TYPE</span><span class="p">[</span><span class="s">&#39;ADS_USE_ENCRYPTION&#39;</span><span class="p">]</span>
+            <span class="n">_ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsi_provider</span><span class="o">.</span><span class="n">getObject</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="s">&quot;LDAP:&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span> <span class="o">=</span> <span class="n">_ds</span><span class="o">.</span><span class="n">OpenDSObject</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">__ads_path</span><span class="p">,</span>
+                            <span class="bp">None</span><span class="p">,</span> <span class="c"># username</span>
+                            <span class="bp">None</span><span class="p">,</span> <span class="c"># password</span>
+                            <span class="n">flag</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsi_provider</span><span class="o">.</span><span class="n">getObject</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ads_path</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distinguished_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">adsi_ldap_com_object</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="k">if</span> <span class="n">adsi_ldap_com_object</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span> <span class="o">=</span> <span class="n">adsi_ldap_com_object</span>
+        <span class="k">elif</span> <span class="n">distinguished_name</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_defaults</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__ads_path</span> <span class="o">=</span> <span class="n">pyadutils</span><span class="o">.</span><span class="n">generate_ads_path</span><span class="p">(</span><span class="n">distinguished_name</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_protocol</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_server</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_port</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__set_adsi_obj</span><span class="p">(</span><span class="n">distinguished_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Either a distinguished name or a COM object must be provided to create an ADObject&quot;</span><span class="p">)</span>
+
+        <span class="c"># by pulling the DN from object instead of what is passed in,</span>
+        <span class="c"># we guarantee correct capitalization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__distinguished_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;distinguishedName&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__object_guid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;objectGUID&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__object_guid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__object_guid</span> <span class="o">=</span> <span class="n">pyadutils</span><span class="o">.</span><span class="n">convert_guid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__object_guid</span><span class="p">)</span>
+        <span class="c"># Set pyAD Object Type        </span>
+        <span class="n">occn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;objectCategory&#39;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">occn</span><span class="p">:</span>
+            <span class="c"># pull out CN from DN</span>
+            <span class="n">object_category_cn</span> <span class="o">=</span> <span class="n">occn</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;,&quot;</span><span class="p">,</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c"># some object categories are not very human readable</span>
+            <span class="c"># so we provide the option to override</span>
+            <span class="k">if</span> <span class="n">object_category_cn</span> <span class="ow">in</span> <span class="n">PYAD_CATEGORY_TYPE_OVERRIDE_MAPPPINGS</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="n">PYAD_CATEGORY_TYPE_OVERRIDE_MAPPPINGS</span><span class="p">[</span><span class="n">object_category_cn</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="n">object_category_cn</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># Sometimes you don&#39;t have acccess to objectCategory attribute,</span>
+            <span class="c"># try, with objectClass attribute</span>
+            <span class="n">objClass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;objectClass&#39;</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s">&#39;domain&#39;</span> <span class="ow">in</span> <span class="n">objClass</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="s">&#39;domain&#39;</span>
+            <span class="k">elif</span> <span class="s">&#39;user&#39;</span> <span class="ow">in</span> <span class="n">objClass</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="s">&#39;user&#39;</span>
+            <span class="k">elif</span> <span class="s">&#39;organizationalUnit&#39;</span> <span class="ow">in</span> <span class="n">objClass</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="s">&#39;organizationalUnit&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="o">=</span> <span class="s">&#39;unknown&#39;</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ADObject.from_guid"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.from_guid">[docs]</a>    <span class="k">def</span> <span class="nf">from_guid</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">guid</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="s">&quot;Generates ADObject based on  GUID&quot;</span>
+        <span class="n">guid</span> <span class="o">=</span> <span class="s">&quot;&lt;GUID=</span><span class="si">%s</span><span class="s">&gt;&quot;</span> <span class="o">%</span> <span class="n">guid</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s">&#39;{&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">from_dn</span><span class="p">(</span><span class="n">guid</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ADObject.from_dn"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.from_dn">[docs]</a>    <span class="k">def</span> <span class="nf">from_dn</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">distinguished_name</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="s">&quot;Generates ADObject based on distinguished name&quot;</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">distinguished_name</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+</div>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_cn</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">cn</span><span class="p">,</span> <span class="n">search_base</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">adsearch</span><span class="o">.</span><span class="n">by_cn</span><span class="p">(</span><span class="n">cn</span><span class="p">,</span> <span class="n">search_base</span><span class="p">,</span> <span class="n">options</span><span class="p">),</span> <span class="bp">None</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ADObject.from_com_object"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.from_com_object">[docs]</a>    <span class="k">def</span> <span class="nf">from_com_object</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">com_object</span><span class="p">):</span>
+        <span class="s">&quot;Generates ADObject based on an existing ADSI com object&quot;</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">distinguished_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">adsi_ldap_com_object</span><span class="o">=</span><span class="n">com_object</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__get_prefixed_cn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="s">&#39;ou&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s">&#39;organizationalUnit&#39;</span> <span class="k">else</span> <span class="s">&#39;cn&#39;</span>
+        <span class="k">return</span> <span class="s">&#39;=&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">False</span><span class="p">)))</span>
+
+    <span class="k">def</span> <span class="nf">__get_object_sid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">sid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objectSid</span>
+        <span class="k">return</span> <span class="n">pyadutils</span><span class="o">.</span><span class="n">convert_sid</span><span class="p">(</span><span class="n">sid</span><span class="p">)</span> <span class="k">if</span> <span class="n">sid</span> <span class="k">else</span> <span class="bp">None</span>
+
+    <span class="n">dn</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__distinguished_name</span><span class="p">,</span>
+                    <span class="n">doc</span><span class="o">=</span><span class="s">&quot;Distinguished Name (DN) of the object&quot;</span><span class="p">)</span>
+    <span class="n">prefixed_cn</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="n">__get_prefixed_cn</span><span class="p">,</span>
+                    <span class="n">doc</span><span class="o">=</span><span class="s">&quot;Prefixed CN (such as &#39;cn=mycomputer&#39; or &#39;ou=mycontainer&#39; of the object&quot;</span><span class="p">)</span>
+    <span class="n">guid</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__object_guid</span><span class="p">,</span>
+                    <span class="n">doc</span><span class="o">=</span><span class="s">&quot;Object GUID of the object&quot;</span><span class="p">)</span>
+    <span class="n">adsPath</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ads_path</span><span class="p">,</span>
+                    <span class="n">doc</span><span class="o">=</span><span class="s">&quot;ADsPath of Active Directory object (such as &#39;LDAP://cn=me,...,dc=com&#39;&quot;</span><span class="p">)</span>
+    <span class="nb">type</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type</span><span class="p">,</span>
+                    <span class="n">doc</span><span class="o">=</span><span class="s">&quot;pyAD object type (user, computer, group, organizationalUnit, domain).&quot;</span><span class="p">)</span>
+    <span class="n">parent_container_path</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dn</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">doc</span><span class="o">=</span><span class="s">&quot;Returns the DN of the object&#39;s parent container.&quot;</span><span class="p">)</span>
+    <span class="n">guid_str</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">guid</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">doc</span><span class="o">=</span><span class="s">&quot;Object GUID of the object&quot;</span><span class="p">)</span>
+    <span class="n">sid</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">fget</span><span class="o">=</span><span class="n">__get_object_sid</span><span class="p">,</span>
+                    <span class="n">doc</span><span class="o">=</span><span class="s">&#39;Get the SID of the Active Directory object&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># guid is always unique so that we can depend on that for providing a unique hash</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">guid</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;&lt;</span><span class="si">%s</span><span class="s"> &#39;</span><span class="si">%s</span><span class="s">&#39;&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dn</span><span class="p">)</span>
+
+    <span class="n">__repr__</span> <span class="o">=</span> <span class="n">__str__</span>
+
+    <span class="k">def</span> <span class="nf">__cmp__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="c"># it doesn&#39;t make sense why you&#39;d ever have to decide</span>
+        <span class="c"># if one GUID was larger than the other,</span>
+        <span class="c"># but it&#39;s important to be able to know if two</span>
+        <span class="c"># pyAD objects represent the same AD object.</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">guid</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">guid</span><span class="p">):</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">guid</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">guid</span><span class="p">):</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">):</span>
+        <span class="c"># allow people to call for random attributes on the ADObject</span>
+        <span class="c"># as long as they exist in Active Directory.</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="p">,</span> <span class="n">attribute</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s">&quot;Commits any changes to the AD object.&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">SetInfo</span><span class="p">()</span>
+        
+    <span class="k">def</span> <span class="nf">__set_gc_adsi_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gc_adsi_obj</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_authentication_flag</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">_ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsi_provider</span><span class="o">.</span><span class="n">getObject</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_protocol</span><span class="o">+</span><span class="s">&quot;:&quot;</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">pyadutils</span><span class="o">.</span><span class="n">generate_ads_path</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dn</span><span class="p">,</span>
+                        <span class="s">&#39;GC&#39;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">default_gc_server</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">default_gc_port</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span> <span class="o">=</span> <span class="n">_ds</span><span class="o">.</span><span class="n">OpenDSObject</span><span class="p">(</span><span class="n">path</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">default_username</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">default_password</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_authentication_flag</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_gc_adsi_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsi_provider</span><span class="o">.</span><span class="n">GetObject</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+                    <span class="n">pyadutils</span><span class="o">.</span><span class="n">generate_ads_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dn</span><span class="p">,</span> <span class="s">&#39;GC&#39;</span><span class="p">,</span> 
+                            <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;server&#39;</span><span class="p">),</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;port&#39;</span><span class="p">)</span>
+                    <span class="p">)</span>
+            <span class="p">)</span>
+            
+    <span class="k">def</span> <span class="nf">__set_gc_adsi_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">pyadutils</span><span class="o">.</span><span class="n">generate_ads_path</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">dn</span><span class="p">,</span>
+                        <span class="s">&#39;GC&#39;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">default_gc_server</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">default_gc_port</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_username</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_password</span><span class="p">:</span>
+            <span class="n">_ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsi_provider</span><span class="o">.</span><span class="n">getObject</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="s">&quot;LDAP:&quot;</span><span class="p">)</span>
+            <span class="n">flag</span> <span class="o">=</span> <span class="n">ADS_AUTHENTICATION_TYPE</span><span class="p">[</span><span class="s">&#39;ADS_SECURE_AUTHENTICATION&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_ssl</span><span class="p">:</span>
+                <span class="n">flag</span> <span class="o">=</span> <span class="n">flag</span> <span class="o">|</span> <span class="n">ADS_AUTHENTICATION_TYPE</span><span class="p">[</span><span class="s">&#39;ADS_USE_ENCRYPTION&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_gc_adsi_obj</span> <span class="o">=</span> <span class="n">_ds</span><span class="o">.</span><span class="n">OpenDSObject</span><span class="p">(</span>
+                    <span class="n">path</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">default_username</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">default_password</span><span class="p">,</span>
+                    <span class="n">flag</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_gc_adsi_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adsi_provider</span><span class="o">.</span><span class="n">GetObject</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">_init_global_catalog_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="sd">&quot;&quot;&quot;Initializes the global catalog ADSI com object to be</span>
+<span class="sd">        used when querying the global catalog instead of the domain directly.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gc_adsi_obj</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_defaults</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__set_gc_adsi_obj</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_init_schema_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schema_adsi_obj</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_schema_adsi_obj</span> <span class="o">=</span> <span class="n">win32com</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">GetObject</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ADObject.get_mandatory_attributes"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.get_mandatory_attributes">[docs]</a>    <span class="k">def</span> <span class="nf">get_mandatory_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of mandatory attributes for the particular object.</span>
+<span class="sd">        These attributes are guaranteed to be defined.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_schema_object</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mandatory_attributes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mandatory_attributes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_schema_adsi_obj</span><span class="o">.</span><span class="n">MandatoryProperties</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mandatory_attributes</span>
+</div>
+<div class="viewcode-block" id="ADObject.get_optional_attributes"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.get_optional_attributes">[docs]</a>    <span class="k">def</span> <span class="nf">get_optional_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of optional attributes for the particular object.</span>
+<span class="sd">        These attributes may be defined, but are not guaranteed to be.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_schema_object</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optional_attributes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_optional_attributes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_schema_adsi_obj</span><span class="o">.</span><span class="n">OptionalProperties</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optional_attributes</span>
+</div>
+<div class="viewcode-block" id="ADObject.get_allowed_attributes"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.get_allowed_attributes">[docs]</a>    <span class="k">def</span> <span class="nf">get_allowed_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of allowed attributes for the particular object.</span>
+<span class="sd">        These attributes may be defined, but are not guaranteed to be.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_mandatory_attributes</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_optional_attributes</span><span class="p">()))</span>
+</div>
+<div class="viewcode-block" id="ADObject.get_attribute"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.get_attribute">[docs]</a>    <span class="k">def</span> <span class="nf">get_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">always_return_list</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s">&#39;LDAP&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the value of any allowable LDAP attribute of the specified object.</span>
+
+<span class="sd">            Keyword arguments:</span>
+<span class="sd">              attribute -- any schema-allowed LDAP attribute (case insensitive). The attribute does not need to be defined.</span>
+<span class="sd">              always_return_list -- if an attribute has a single value, this specifies whether to return only the</span>
+<span class="sd">                value or to return a list containing the single value. Similarly, if true, a query on an undefined</span>
+<span class="sd">                attribute will return an empty list instead of a None object. If querying an attribute known to only</span>
+<span class="sd">                contain at most one element, then it is easier to set to false. Otherwise, if querying a potentially</span>
+<span class="sd">                multi-valued attribute, it is safest to leave at default.</span>
+<span class="sd">              source -- either &#39;LDAP&#39; or &#39;GC&#39;</span>
+
+<span class="sd">            Note to experienced ADSI users:</span>
+<span class="sd">              - If an attribute is undefined, getAttribute() will return None or [] and will not choke on the attribute.</span>
+<span class="sd">              - In regards to always_return_list, True has similar behavior to getEx() whereas False is similar to Get().&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="p">,</span> <span class="n">attribute</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InvalidAttribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dn</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">source</span> <span class="o">==</span> <span class="s">&#39;LDAP&#39;</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">GetEx</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">source</span> <span class="o">==</span> <span class="s">&#39;GC&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_init_global_catalog_object</span><span class="p">()</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gc_adsi_obj</span><span class="o">.</span><span class="n">GetEx</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">always_return_list</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="c"># this just means that the attribute doesn&#39;t have a value which</span>
+            <span class="c"># we imply means null instead of throwing an error..</span>
+            <span class="k">except</span> <span class="n">pywintypes</span><span class="o">.</span><span class="n">com_error</span><span class="p">,</span> <span class="n">excpt</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">pyadutils</span><span class="o">.</span><span class="n">interpret_com_exception</span><span class="p">(</span><span class="n">excpt</span><span class="p">)[</span><span class="s">&#39;error_constant&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;E_ADS_PROPERTY_NOT_FOUND&#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">always_return_list</span> <span class="k">else</span> <span class="bp">None</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">pyadutils</span><span class="o">.</span><span class="n">pass_up_com_exception</span><span class="p">(</span><span class="n">excpt</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;attribute&#39;</span><span class="p">:</span><span class="n">attribute</span><span class="p">})</span>
+</div>
+    <span class="k">def</span> <span class="nf">_set_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="p">,</span> <span class="n">attribute</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InvalidAttribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dn</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">putEx</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">pywintypes</span><span class="o">.</span><span class="n">com_error</span><span class="p">,</span> <span class="n">excpt</span><span class="p">:</span>
+                <span class="n">pyadutils</span><span class="o">.</span><span class="n">pass_up_com_exception</span><span class="p">(</span><span class="n">excpt</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ADObject.clear_attribute"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.clear_attribute">[docs]</a>    <span class="k">def</span> <span class="nf">clear_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clears (removes) the specified LDAP attribute from the object.</span>
+<span class="sd">        Identical to setting the attribute to None or [].&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span> <span class="o">!=</span> <span class="p">[]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_attribute</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_flush</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ADObject.update_attribute"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.update_attribute">[docs]</a>    <span class="k">def</span> <span class="nf">update_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">newvalue</span><span class="p">,</span> <span class="n">no_flush</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Updates any mutable LDAP attribute for the object. If you are adding or removing</span>
+<span class="sd">        values from a multi-valued attribute, see append_to_attribute and remove_from_attribute.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">newvalue</span> <span class="ow">in</span> <span class="p">((),[],</span><span class="bp">None</span><span class="p">,</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">clear_attribute</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">pyadutils</span><span class="o">.</span><span class="n">generate_list</span><span class="p">(</span><span class="n">newvalue</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="n">attribute</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_attribute</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pyadutils</span><span class="o">.</span><span class="n">generate_list</span><span class="p">(</span><span class="n">newvalue</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">no_flush</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_flush</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ADObject.update_attributes"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.update_attributes">[docs]</a>    <span class="k">def</span> <span class="nf">update_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute_value_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Updates multiple attributes in a single transaction</span>
+<span class="sd">        attribute_value_dict should contain a dictionary of values keyed by attribute name&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attribute_value_dict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_attribute</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flush</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ADObject.append_to_attribute"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.append_to_attribute">[docs]</a>    <span class="k">def</span> <span class="nf">append_to_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">valuesToAppend</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Appends values in list valuesToAppend to the specified multi-valued attribute.</span>
+<span class="sd">        valuesToAppend can contain a single value or a list of multiple values.&quot;&quot;&quot;</span>
+        <span class="n">difference</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pyadutils</span><span class="o">.</span><span class="n">generate_list</span><span class="p">(</span><span class="n">valuesToAppend</span><span class="p">))</span> \
+                        <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="n">attribute</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">difference</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_attribute</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">difference</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_flush</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ADObject.remove_from_attribute"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.remove_from_attribute">[docs]</a>    <span class="k">def</span> <span class="nf">remove_from_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">valuesToRemove</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Removes any values in list valuesToRemove from the specified multi-valued attribute.&quot;&quot;&quot;</span>
+        <span class="n">difference</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pyadutils</span><span class="o">.</span><span class="n">generate_list</span><span class="p">(</span><span class="n">valuesToRemove</span><span class="p">))</span> \
+                        <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="n">attribute</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">difference</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_attribute</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="n">difference</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_flush</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ADObject.get_user_account_control_settings"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.get_user_account_control_settings">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_account_control_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a dictionary of settings stored within UserAccountControl.</span>
+<span class="sd">        Expected keys for the dictionary are the same as keys in the ADS_USER_FLAG dictionary.</span>
+<span class="sd">        Further information on these values can be found at</span>
+<span class="sd">        http://msdn.microsoft.com/en-us/library/aa772300.aspx.&quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">auc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;UserAccountControl&#39;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">ADS_USER_FLAG</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">auc</span> <span class="o">&amp;</span> <span class="n">value</span> <span class="o">==</span> <span class="n">value</span> <span class="k">else</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="n">d</span>
+</div>
+<div class="viewcode-block" id="ADObject.set_user_account_control_setting"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.set_user_account_control_setting">[docs]</a>    <span class="k">def</span> <span class="nf">set_user_account_control_setting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userFlag</span><span class="p">,</span> <span class="n">newValue</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets a single setting in UserAccountControl.</span>
+
+<span class="sd">        UserFlag must be a value from ADS_USER_FLAG dictionary keys.</span>
+<span class="sd">        More information can be found at http://msdn.microsoft.com/en-us/library/aa772300.aspx.</span>
+<span class="sd">        newValue accepts boolean values&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">userFlag</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ADS_USER_FLAG</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">InvalidValue</span><span class="p">(</span><span class="s">&quot;userFlag&quot;</span><span class="p">,</span><span class="n">userFlag</span><span class="p">,</span><span class="nb">list</span><span class="p">(</span><span class="n">ADS_USER_FLAG</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+        <span class="k">elif</span> <span class="n">newValue</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InvalidValue</span><span class="p">(</span><span class="s">&quot;newValue&quot;</span><span class="p">,</span><span class="n">newValue</span><span class="p">,[</span><span class="bp">True</span><span class="p">,</span><span class="bp">False</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># retreive the userAccountControl as if it didn&#39;t have the flag in question set.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;userAccountControl&#39;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">ADS_USER_FLAG</span><span class="p">[</span><span class="n">userFlag</span><span class="p">]</span> <span class="p">:</span>
+                <span class="n">nv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;userAccountControl&#39;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span> <span class="o">^</span> <span class="n">ADS_USER_FLAG</span><span class="p">[</span><span class="n">userFlag</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">nv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;userAccountControl&#39;</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+            <span class="c"># if the flag is true, then the value is present and</span>
+            <span class="c"># we add it to the starting point with B-OR.</span>
+            <span class="c"># Otherwise, if it&#39;s false, it&#39;s just not present,</span>
+            <span class="c"># so we leave it without any mention of the flag as in previous step.</span>
+            <span class="k">if</span> <span class="n">newValue</span><span class="p">:</span>
+                <span class="n">nv</span> <span class="o">=</span> <span class="n">nv</span> <span class="o">|</span> <span class="n">ADS_USER_FLAG</span><span class="p">[</span><span class="n">userFlag</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_attribute</span><span class="p">(</span><span class="s">&#39;userAccountControl&#39;</span><span class="p">,</span><span class="n">nv</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADObject.disable"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.disable">[docs]</a>    <span class="k">def</span> <span class="nf">disable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">AccountDisabled</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">AccountDisabled</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_flush</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">pywintypes</span><span class="o">.</span><span class="n">com_error</span><span class="p">,</span> <span class="n">excpt</span><span class="p">:</span>
+            <span class="n">pyadutils</span><span class="o">.</span><span class="n">pass_up_com_exception</span><span class="p">(</span><span class="n">excpt</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADObject.enable"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.enable">[docs]</a>    <span class="k">def</span> <span class="nf">enable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">AccountDisabled</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">AccountDisabled</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_flush</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">pywintypes</span><span class="o">.</span><span class="n">com_error</span><span class="p">,</span> <span class="n">excpt</span><span class="p">:</span>
+            <span class="n">pyadutils</span><span class="o">.</span><span class="n">pass_up_com_exception</span><span class="p">(</span><span class="n">excpt</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">_get_password_last_set</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># http://www.microsoft.com/technet/scriptcenter/topics/win2003/lastlogon.mspx</span>
+        <span class="c"># kudos to http://docs.activestate.com/activepython/2.6/pywin32/html/com/help/active_directory.html</span>
+        <span class="k">return</span> <span class="n">pyadutils</span><span class="o">.</span><span class="n">convert_datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;pwdLastSet&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">))</span>
+
+<div class="viewcode-block" id="ADObject.move"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_ou_object</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Moves the object to a new organizationalUnit.</span>
+
+<span class="sd">        new_ou_object expects a ADContainer object where the current object will be moved to.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">new_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_protocol</span> <span class="o">+</span> <span class="s">&#39;://&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dn</span>
+            <span class="n">new_ou_object</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">MoveHere</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefixed_cn</span><span class="p">)</span>
+            <span class="n">new_ou_object</span><span class="o">.</span><span class="n">_flush</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">pywintypes</span><span class="o">.</span><span class="n">com_error</span><span class="p">,</span> <span class="n">excpt</span><span class="p">:</span>
+            <span class="n">pyadutils</span><span class="o">.</span><span class="n">pass_up_com_exception</span><span class="p">(</span><span class="n">excpt</span><span class="p">)</span>
+        <span class="n">new_dn</span> <span class="o">=</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">prefixed_cn</span><span class="p">,</span> <span class="n">new_ou_object</span><span class="o">.</span><span class="n">dn</span><span class="p">))</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ads_path</span> <span class="o">=</span> <span class="n">pyadutils</span><span class="o">.</span><span class="n">generate_ads_path</span><span class="p">(</span><span class="n">new_dn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_protocol</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_server</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__set_adsi_obj</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__set_gc_adsi_obj</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__distinguished_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;distinguishedName&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADObject.rename"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.rename">[docs]</a>    <span class="k">def</span> <span class="nf">rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_name</span><span class="p">,</span> <span class="n">set_sAMAccountName</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Renames the current object within its current organizationalUnit.</span>
+<span class="sd">        new_name expects the new name of the object (just CN not prefixed CN or distinguishedName).&quot;&quot;&quot;</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent_container</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s">&#39;organizationalUnit&#39;</span><span class="p">:</span>
+            <span class="n">pcn</span> <span class="o">=</span> <span class="s">&#39;ou=&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pcn</span> <span class="o">=</span> <span class="s">&#39;cn=&#39;</span>
+        <span class="n">pcn</span> <span class="o">+=</span> <span class="n">new_name</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;user&#39;</span><span class="p">,</span> <span class="s">&#39;computer&#39;</span><span class="p">,</span> <span class="s">&#39;group&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">set_sAMAccountName</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">Put</span><span class="p">(</span><span class="s">&#39;sAMAccountName&#39;</span><span class="p">,</span> <span class="n">new_name</span><span class="p">)</span>
+            <span class="n">new_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_protocol</span><span class="o">+</span><span class="s">&#39;://&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">dn</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">_ldap_adsi_obj</span><span class="o">.</span><span class="n">MoveHere</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">pcn</span><span class="p">)</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">_flush</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">pywintypes</span><span class="o">.</span><span class="n">com_error</span><span class="p">,</span> <span class="n">excpt</span><span class="p">:</span>
+            <span class="n">pyadutils</span><span class="o">.</span><span class="n">pass_up_com_exception</span><span class="p">(</span><span class="n">excpt</span><span class="p">)</span>
+        <span class="n">new_dn</span> <span class="o">=</span> <span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">pcn</span><span class="p">,</span> <span class="n">parent</span><span class="o">.</span><span class="n">dn</span><span class="p">))</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ads_path</span> <span class="o">=</span> <span class="n">pyadutils</span><span class="o">.</span><span class="n">generate_ads_path</span><span class="p">(</span><span class="n">new_dn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_protocol</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_server</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_ldap_port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__set_adsi_obj</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__set_gc_adsi_obj</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__distinguishedName</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="s">&#39;distinguishedName&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADObject.add_to_group"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.add_to_group">[docs]</a>    <span class="k">def</span> <span class="nf">add_to_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds current object to the specified group.</span>
+<span class="sd">        group expects an ADGroup object.&quot;&quot;&quot;</span>
+        <span class="n">group</span><span class="o">.</span><span class="n">add_members</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADObject.remove_from_group"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.remove_from_group">[docs]</a>    <span class="k">def</span> <span class="nf">remove_from_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Removes current object from the specified group.</span>
+<span class="sd">        group expects an ADGroup object to which the current object belongs.&quot;&quot;&quot;</span>
+        <span class="n">group</span><span class="o">.</span><span class="n">remove_members</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADObject.set_managedby"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.set_managedby">[docs]</a>    <span class="k">def</span> <span class="nf">set_managedby</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets managedBy on object to the specified user&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">manager</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__str__</span> <span class="o">==</span> <span class="s">&#39;ADUser&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_attribute</span><span class="p">(</span><span class="s">&#39;managedBy&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">.</span><span class="n">dn</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clear_attribute</span><span class="p">(</span><span class="s">&#39;managedBy&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADObject.clear_managedby"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.clear_managedby">[docs]</a>    <span class="k">def</span> <span class="nf">clear_managedby</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets object to be managedBy nobody&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_manager</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADObject.dump_to_xml"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.dump_to_xml">[docs]</a>    <span class="k">def</span> <span class="nf">dump_to_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">whitelist_attributes</span><span class="o">=</span><span class="p">[],</span> <span class="n">blacklist_attributes</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">whitelist_attributes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">whitelist_attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_allowed_attributes</span><span class="p">()</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">whitelist_attributes</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">blacklist_attributes</span><span class="p">))</span>
+
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">Document</span><span class="p">()</span>
+        <span class="n">adobj_xml_doc</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s">&quot;ADObject&quot;</span><span class="p">)</span>
+        <span class="n">adobj_xml_doc</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s">&quot;objectGUID&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">guid</span><span class="p">)</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s">&#39;{&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">))</span>
+        <span class="n">adobj_xml_doc</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s">&quot;pyADType&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+        <span class="n">doc</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">adobj_xml_doc</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s">&quot;attribute&quot;</span><span class="p">)</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">))</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">,</span><span class="mi">2</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;buffer&#39;</span><span class="p">,</span><span class="s">&#39;instance&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">ok_elem</span><span class="o">=</span><span class="bp">True</span>
+                        <span class="n">node</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s">&quot;type&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">))</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">,</span><span class="mi">2</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">text</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+                        <span class="k">except</span><span class="p">:</span>
+                            <span class="n">text</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&quot;latin-1&quot;</span><span class="p">,</span> <span class="s">&#39;replace&#39;</span><span class="p">))</span>
+                        <span class="n">node</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+                    <span class="k">except</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="s">&#39;attribute: </span><span class="si">%s</span><span class="s"> not xml-able&#39;</span> <span class="o">%</span> <span class="n">attribute</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">node</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s">&quot;type&quot;</span><span class="p">,</span> <span class="s">&quot;multiValued&quot;</span><span class="p">)</span>
+                    <span class="n">ok_elem</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">))</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">,</span><span class="mi">2</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;buffer&#39;</span><span class="p">,</span><span class="s">&#39;instance&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                                <span class="n">valnode</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s">&quot;value&quot;</span><span class="p">)</span>
+                                <span class="n">valnode</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s">&quot;type&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">))</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">,</span><span class="mi">2</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+                                <span class="n">text</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+                                <span class="n">valnode</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+                                <span class="n">node</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">valnode</span><span class="p">)</span>
+                                <span class="n">ok_elem</span><span class="o">=</span><span class="bp">True</span>
+                    <span class="k">except</span><span class="p">:</span>
+                        <span class="k">print</span> <span class="s">&#39;attribute: </span><span class="si">%s</span><span class="s"> not xml-able&#39;</span> <span class="o">%</span> <span class="n">attribute</span>
+                <span class="k">if</span> <span class="n">ok_elem</span><span class="p">:</span> <span class="n">adobj_xml_doc</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">doc</span><span class="o">.</span><span class="n">toxml</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s">&quot;UTF-8&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ADObject.adjust_pyad_type"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.adjust_pyad_type">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_pyad_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adjusts pyAD class to match object pyad type.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_py_ad_object_mappings</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_py_ad_object_mappings</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Unkown type. Adjustment not possible.&quot;</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__get_parent_container</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">ADObject</span><span class="o">.</span><span class="n">from_dn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_container_path</span><span class="p">,</span>
+                <span class="n">options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_options</span><span class="p">())</span>
+        <span class="n">q</span><span class="o">.</span><span class="n">adjust_pyad_type</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">q</span>
+    <span class="n">parent_container</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">__get_parent_container</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ADObject.delete"><a class="viewcode-back" href="../../objects.html#pyad.adobject.ADObject.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent_container</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">parent</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Object does not have a parent container. Cannot be deleted&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">remove_child</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Python Active Directory Tools 0.5.03 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2013, Zakir Durumeric.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+<script type="text/javascript">
+  var _gauges = _gauges || [];
+  (function() {
+    var t   = document.createElement('script');
+    t.type  = 'text/javascript';
+    t.async = true;
+    t.id    = 'gauges-tracker';
+    t.setAttribute('data-site-id', '4fe3a2a4613f5d2d5600005d');
+    t.src = '//secure.gaug.es/track.js';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(t, s);
+  })();
+</script>
+
+  </body>
+</html>
