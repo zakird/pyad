@@ -15,6 +15,7 @@ try:
     import win32api
     import pywintypes
     import win32com.client
+    import win32security
 except ImportError:
     raise Exception("pywin32 library required. Download from http://sourceforge.net/projects/pywin32/")
 
@@ -81,13 +82,13 @@ class ADBase(object):
             if val:
                 options[key] = val
         return options
-        
+
     @property
     def _safe_default_domain(self):
         if self.default_domain:
             return self.default_domain
         raise Exception("Unable to detect default domain. Must specify search base.")
-        
+
     @property
     def _safe_default_forest(self):
         if self.default_forest:
