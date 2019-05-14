@@ -186,7 +186,7 @@ class ADObject(ADBase):
     def __eq__(self, other):
         return isinstance(other, ADObject) and self.guid == other.guid
     
-    def __le__(self, other):
+    def __lt__(self, other):
         # it doesn't make sense why you'd ever have to decide
         # if one GUID was larger than the other,
         # but it's important to be able to know if two
