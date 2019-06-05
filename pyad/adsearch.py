@@ -69,9 +69,9 @@ def all_results_by_cn(cn, search_base=None, options={}):
 
 def all_results_by_upn(upn, search_base=None, options={}):
     if not search_base: 
-        if not ADBase.default_forest:
-            raise Exception("Unable to detect default forest. Must specify search base.")
-        search_base = ADBase.default_forest
+        if not ADBase.default_domain:
+            raise Exception("Unable to detect default domain. Must specify search base.")
+        search_base = ADBase.default_domain
     _ad_query_obj.reset()
     _ad_query_obj.execute_query(where_clause=("userPrincipalName = '%s'" % upn), 
         base_dn=search_base, 
