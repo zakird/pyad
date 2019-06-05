@@ -26,13 +26,16 @@ class ADContainer(ADObject):
         prefixed_name = '='.join((prefix,name))
         return self._ldap_adsi_obj.Create(type_, prefixed_name)
     
-    def create_user(self, sAMAccountName, cn, password=None, upn_suffix=None, enable=True,optional_attributes={}):
+    def create_user(self, sAMAccountName, cn=None, password=None, upn_suffix=None, enable=True,optional_attributes={}):
         """Create a new user object in the container"""
         try:
             if not upn_suffix:
                 upn_suffix = self.get_domain().get_default_upn()
             upn = '@'.join((sAMAccountName, upn_suffix))
-            obj = self.__create_object('user', cn)
+            if not cn:
+                obj = self.__create_object('user', sAMAccountName)
+            else:
+                obj = self.__create_object('user', cn)
             obj.Put('sAMAccountName', optional_attributes.get('sAMAccountName', sAMAccountName))
             obj.Put('userPrincipalName', upn)
             obj.SetInfo()
