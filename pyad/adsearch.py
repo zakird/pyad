@@ -30,6 +30,19 @@ def by_sam(sAMAccountName, search_base=None, options={}):
         type="GC")
     return _ad_query_obj.get_single_result()['distinguishedName']
 
+def by_mail(mail, search_base=None, options={}):
+    if not search_base:
+        if not ADBase.default_domain:
+            raise Exception("Unable to detect default domain. Must specify search base.")
+        search_base = ADBase.default_domain
+    _ad_query_obj.reset()
+    
+    _ad_query_obj.execute_query(where_clause=("mail = '%s'" % mail),
+        base_dn=search_base,
+        options=options,
+        type="GC")
+    return _ad_query_obj.get_single_result()['distinguishedName']
+
 def by_upn(upn, search_base=None, options={}):
     if not search_base: 
         if not ADBase.default_forest:
