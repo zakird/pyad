@@ -7,11 +7,11 @@ pyad is a Python library designed to provide a simple, Pythonic interface to Act
 Requirements
 ============
 
-pyad requires pywin32, available at http://sourceforge.net/projects/pywin32.
+pyad requires pywin32, available at https://github.com/mhammond/pywin32.
 
 Alternatively,
 ::
-    pip install pypiwin32
+    pip install pywin32
 
 works as well.
 
