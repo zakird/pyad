@@ -466,7 +466,7 @@ class ADObject(ADBase):
     def set_managedby(self, user):
         """Sets managedBy on object to the specified user"""
         if user:
-            assert manager.__class__.__str__ == 'ADUser'
+            assert user.__class__.__str__ == 'ADUser'
             self.update_attribute('managedBy', user.dn)
         else:
             self.clear_attribute('managedBy')
