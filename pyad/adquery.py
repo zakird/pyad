@@ -48,18 +48,25 @@ class ADQuery(ADBase):
 
     def execute_query(self, attributes=["distinguishedName"], where_clause=None,
                     type="LDAP", base_dn=None, page_size=1000,
-                    search_scope="subtree", options={}):
+                    search_scope="subtree", options={}, ldap_dialect=False):
         assert type in ("LDAP", "GC")
         if not base_dn:
             if type == "LDAP":
                 base_dn = self._safe_default_domain
             if type == "GC":
                 base_dn = self._safe_default_forest
-        query = "SELECT %s FROM '%s'" % (','.join(attributes),
-                pyadutils.generate_ads_path(base_dn, type,
-                        self.default_ldap_server, self.default_ldap_port))
-        if where_clause:
-            query = ' '.join((query, 'WHERE', where_clause))
+        # https://docs.microsoft.com/en-us/windows/win32/adsi/searching-with-activex-data-objects-ado
+
+        # Ldap dialect
+        if ldap_dialect:
+            query = f"<{pyadutils.generate_ads_path(base_dn, type, self.default_ldap_server, self.default_ldap_port)}>; {where_clause};{','.join(attributes)}"
+        else:
+        # SQL dialect
+            query = "SELECT %s FROM '%s'" % (','.join(attributes),
+                    pyadutils.generate_ads_path(base_dn, type,
+                            self.default_ldap_server, self.default_ldap_port))
+            if where_clause:
+                query = ' '.join((query, 'WHERE', where_clause))
 
         command = win32com.client.Dispatch("ADODB.Command")
         command.ActiveConnection = self.__adodb_conn
@@ -73,7 +80,6 @@ class ADQuery(ADBase):
         else:
             raise Exception("Unknown search_base %s, must be subtree, "\
                             "onelevel or base" % search_scope)
-
         command.CommandText = query
         self.__rs, self.__rc = command.Execute()
         self.__queried = True
