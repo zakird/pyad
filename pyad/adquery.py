@@ -58,7 +58,7 @@ class ADQuery(ADBase):
         # https://docs.microsoft.com/en-us/windows/win32/adsi/searching-with-activex-data-objects-ado
 
         # Ldap dialect
-        if ldap_dialect == True:
+        if ldap_dialect:
             query = f"<{pyadutils.generate_ads_path(base_dn, type, self.default_ldap_server, self.default_ldap_port)}>; {where_clause};{','.join(attributes)}"
         else:
         # SQL dialect
