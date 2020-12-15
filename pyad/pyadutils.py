@@ -9,6 +9,8 @@ from datetime import timedelta
 def validate_credentials(username, password, domain=None):
     """Validates credentaials; returns a PyHANDLE object with a bool value
     of True if the credentials are valid, else returns None.
+    Note that if the user would not be able to log on; for example,
+    due to the account being expired; None will be returned.
     """
     try:
         valid = win32security.LogonUser(username, domain, password,
