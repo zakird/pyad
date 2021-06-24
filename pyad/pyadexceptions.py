@@ -61,4 +61,4 @@ class invalidResults(Exception):
     self.__numberResults = numberResults
     
   def __str__(self):
-    return 'The specified query resturned %i results. getSingleResults only functions with a single result.' % self.__numberResults
+    return 'The specified query returned %i results. getSingleResults only functions with a single result.' % self.__numberResults
