@@ -473,7 +473,7 @@ class ADObject(ADBase):
 
     def clear_managedby(self):
         """Sets object to be managedBy nobody"""
-        return self.set_manager(None)
+        return self.set_managedby(None)
 
     def dump_to_xml(self, whitelist_attributes=[], blacklist_attributes=[]):
         """Dumps object and all human-readable attributes to an xml document which is returned as a string."""
