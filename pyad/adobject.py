@@ -1,10 +1,12 @@
 from __future__ import print_function
 from __future__ import absolute_import
 from builtins import str
+from functools import total_ordering
 from . import adsearch
 from . import pyadutils
 from .adbase import *
 
+@total_ordering
 class ADObject(ADBase):
     """Python object that represents any active directory object."""
 
@@ -180,18 +182,18 @@ class ADObject(ADBase):
     def __repr__(self):
         u = self.__unicode__()
         return u
-
-    def __cmp__(self, other):
+    
+    def __eq__(self, other):
+        return isinstance(other, ADObject) and self.guid == other.guid
+    
+    def __lt__(self, other):
         # it doesn't make sense why you'd ever have to decide
         # if one GUID was larger than the other,
         # but it's important to be able to know if two
         # pyAD objects represent the same AD object.
-        if (self.guid == other.guid):
-            return 0
-        elif (self.guid < other.guid):
-            return -1
-        else:
-            return 1
+        if isinstance(other, ADObject):
+            return self.guid < other.guid
+        return NotImplemented
 
     def __getattr__(self, attribute):
         # allow people to call for random attributes on the ADObject
