@@ -36,7 +36,7 @@ class ADQuery(ADBase):
                             ADQuery.ADS_USE_ENCRYPTION
             self.__adodb_conn.Properties("ADSI Flag").Value = adsi_flag
             self.__adodb_conn.Properties("Encrypt Password").Value = True
-            self.__adodb_conn.Open("Provider=ADSDSOObject")
+            self.__adodb_conn.Open()
         else:
             self.__adodb_conn.Open("Provider=ADSDSOObject")
 
