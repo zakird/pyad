@@ -16,7 +16,7 @@ setup(
     maintainer = "Zakir Durumeric",
     maintainer_email = "zakird@gmail.com",
     download_url = "https://github.com/zakird/pyad/",
-    url = "https://zakird.com/pyad",
+    url = "https://zakird.github.io/pyad/",
     description = "An Object-Oriented Active Directory management framework built on ADSI",
     license = "Apache License, Version 2.0",
     keywords = "python microsoft windows active directory AD adsi",
