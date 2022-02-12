@@ -6,11 +6,12 @@ import datetime
 class ADUser(ADObject):
     
     @classmethod
-    def create(cls, name, container_object, password=None, upn_suffix=None,
+    def create(cls, sAMAccountName, container_object, cn=None, password=None, upn_suffix=None,
                     enable=True, optional_attributes={}):
         """Creates and returns a new active directory user"""
         return container_object.create_user(
-            name=name,
+            sAMAccountName=sAMAccountName,
+            cn=cn,
             password=password,
             upn_suffix=upn_suffix,
             enable=enable,
